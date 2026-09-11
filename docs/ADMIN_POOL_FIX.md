@@ -6,7 +6,7 @@ Applies to the existing Next.js / Supabase build in `plydeck1-lang/Plydeck`.
 
 - Saving a pool now accepts Supabase timestamps ending in `+00:00`, as well as UTC `Z` and explicit offsets such as `+05:30`. The API normalizes them to UTC.
 - The date editor displays **Booking closes (IST)** consistently. Editing another field preserves the original closing instant; clearing the date no longer immediately converts an empty value into an invalid date.
-- Draft cards and the editor identify incomplete bond, tolerance and full specification fields. **Review setup** opens the form when publishing prerequisites are incomplete. After completing and saving them, **Publish pool** becomes available.
+- Draft cards and the editor identify incomplete bond, tolerance and full specification fields. **Publish pool** stays visible on every draft card. It is disabled while prerequisites are incomplete; the card explains what to finish through **Edit pool**. After completing and saving those details, the button becomes enabled.
 - Creating a pool requires an explicit shipment choice. A new pool no longer silently selects the first existing truckload. The OEM category is selected when available.
 
 No Supabase SQL migration or environment-variable change is required for this correction. Keep the existing database and authentication settings.
@@ -32,7 +32,7 @@ If you have independently modified any of these files since the supplied build, 
 
 ## Publish the existing OEM pools
 
-1. Log in with your admin account and open **Manage → Pools → Review setup** (or **Edit pool**).
+1. Log in with your admin account and open **Manage → Pools → Edit pool**.
 2. Choose a future **Booking closes (IST)** date.
 3. Under **Product specification**, replace **Factory specification pending** with the actual supplier-confirmed **Bond / glue grade** and **Thickness tolerance**. Review **Full specification / supplier commitment** and enter the agreed batch details. Do not substitute an unverified grade or tolerance merely to pass validation.
 4. Review quantities, purchase prices and operations allocations, tick the acknowledgement and save.
