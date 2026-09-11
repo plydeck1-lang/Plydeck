@@ -1,6 +1,6 @@
 # PLYDECK · Phase 2 — deployment bundle
 
-Start with `START_HERE.md`. All SQL is in `supabase/`; choose new setup or upgrade in `supabase/README_SQL.md`. This bundle includes migration 006 for the linked, fixed 100-sheet OEM mix.
+Start with `START_HERE.md`. All SQL is in `supabase/`; choose new setup or upgrade in `supabase/README_SQL.md`. This bundle includes migration 007 for the fixed four-item, 100-sheet OEM slot.
 
 A city-first plywood buying webapp for retailers and contractors. Built with Next.js App Router, React, TypeScript, Supabase and Razorpay, for deployment on Vercel.
 
@@ -17,7 +17,7 @@ npm.cmd run dev
 ```
 
 4. Open `http://localhost:3000`. Select Bengaluru. The demo flag in `.env.local` enables a local preview without Supabase or Razorpay credentials.
-5. Choose a pool, select slots, adjust the mix and accept the terms. Continue as a demo buyer and enter sample business details. Use a syntactically valid sample GSTIN such as `29ABCDE1234F1Z5` only in demo.
+5. Choose a pool, review the fixed plywood contents, select slots and accept the terms. Continue as a demo buyer and enter sample business details. Use a syntactically valid sample GSTIN such as `29ABCDE1234F1Z5` only in demo.
 6. Click **Explore admin** in the demo banner to edit categories, pools and shared shipments. Demo state is stored only in this browser. It does not create Supabase rows or collect money.
 
 To reset the demo, clear the browser's `plydeck-demo-v1` local-storage entry. City preference is stored as `plydeck-city`.
@@ -26,8 +26,8 @@ To reset the demo, clear the browser's `plydeck-demo-v1` local-storage entry. Ci
 
 - Public city-first storefront, plywood categories and detailed product specifications.
 - Two Bengaluru OEM pools, five slots each, standard 8 × 4 ft.
-- Exactly 100 sheets per slot. Default 70 × 16mm + 30 × 6mm; buyers can shuffle the linked mix through 85 × 16mm + 15 × 6mm.
-- Customer price summary shows the two ex-factory reference rates, taxable order value, 18% GST and final total. Internal operations allocations remain in the locked quote for accounting and audit without being itemized to the buyer.
+- Exactly 100 fixed 8 × 4 ft sheets per slot: 50 MR 16mm, 20 BWP 16mm, 15 MR 6mm and 15 BWP 6mm. Buyers choose slot numbers only; they cannot change quantities.
+- Admin rate card stores a separate ex-factory ₹/sqft rate for each of the four fixed items. The customer summary shows those plywood lines, taxable order value, 18% GST and final total. Internal operations allocations remain in the locked quote for accounting and audit without being itemized to the buyer.
 - Per-order staged payments: 10% booking, 40% confirmation, 50% after QC and before dispatch. Percentages apply to the buyer's order total including GST, not the whole pool.
 - Business login, registration, email verification, password reset, GST and billing profile.
 - Customer order history within the same storefront, QC report and payment actions.
@@ -36,17 +36,17 @@ To reset the demo, clear the browser's `plydeck-demo-v1` local-storage entry. Ci
 - Razorpay server order creation, checkout signature checks, captured-payment verification, signed webhook handling, payment reconciliation and idempotent refunds.
 - Consent-based WhatsApp Cloud API outbox, approved-template worker, signed webhook delivery updates, inbound message log and in-app admin WhatsApp log.
 - A 15-minute unpaid checkout hold. Late or duplicate captured payments enter a full-refund queue instead of taking another buyer's slot.
-- Post-QC replacements use the released slot's existing sheet mix. They cannot change already produced goods. All three instalments must still clear before dispatch.
+- Post-QC replacements use the same fixed four-item slot. They cannot change already produced goods. All three instalments must still clear before dispatch.
 
 ## Initial pricing assumptions
 
 The two pools share one 32,000 kg cargo-payload shipment with a 600 kg packing allowance. Default goods weight is 28,000 kg. Provisional sheet weights are 32 kg for 16mm and 12 kg for 6mm.
 
-The ₹56/sqft factory rate is applied to BOTH thicknesses. It is not an independently verified quote for 6mm. Change both fields to the actual supplier prices.
+The initial ₹56/sqft factory rate is applied to all four rate-card items. These are worked assumptions, not independently verified supplier quotes. Enter the confirmed MR/BWP rates for both thicknesses before publishing.
 
-Combined freight is a ₹50,000 worked assumption. Total allocated operations across the two pools are ₹94,000, including one month's ₹18,000 rent. Each pool receives half, and its five slots each receive one fifth of that allocation. Allocations are fixed per slot, even if its thickness mix changes. This is a published bundle allocation, not a claim of actual per-slot freight by weight. Weight is separately enforced for truck capacity.
+Combined freight is a ₹50,000 worked assumption. Total allocated operations across the two pools are ₹94,000, including one month's ₹18,000 rent. Each pool receives half, and its five slots each receive one fifth of that allocation. Allocations are fixed per slot. This is a published bundle allocation, not a claim of actual per-slot freight by weight. Weight is separately enforced for truck capacity.
 
-The ₹2/sqft trading spread and ₹0.25/sqft rounding increment produce a default ₹61/sqft before GST. One default 70:30 slot is ₹1,95,200 + ₹35,136 GST = ₹2,30,336. Payments are ₹23,033.60, ₹92,134.40 and ₹1,15,168.00. A buyer’s total can change with the selected linked mix when the two thickness rates differ; gateway charges, general overhead and financing reduce the trading contribution. Recoverable input GST is excluded from cost; nonrecoverable taxes must be included.
+When all four rates are ₹56/sqft, the ₹2/sqft trading spread and ₹0.25/sqft rounding increment produce ₹61/sqft before GST. One fixed slot is ₹1,95,200 + ₹35,136 GST = ₹2,30,336. Payments are ₹23,033.60, ₹92,134.40 and ₹1,15,168.00. The total changes only when an admin changes the four-item rate card or pool cost allocation before reservations; gateway charges, general overhead and financing reduce the trading contribution. Recoverable input GST is excluded from cost; nonrecoverable taxes must be included.
 
 All money in quotes, payments and refunds is integer paise. GST is calculated on the complete taxable value. The last instalment absorbs paise rounding so the stages always sum to the total. Pool totals reconcile to the sum of accepted customer orders; don't recalculate historical orders from a revised rate card.
 

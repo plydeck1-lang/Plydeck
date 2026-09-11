@@ -63,7 +63,8 @@ Run the migrations in this order in the dedicated PLYDECK Supabase project:
 4. `supabase/migrations/004_whatsapp_delivery_fixes.sql`
 5. `supabase/migrations/005_independent_thickness_quantities.sql`
 6. `supabase/migrations/006_fixed_100_sheet_slot_mix.sql`
-7. `supabase/seed.sql`
+7. `supabase/migrations/007_fixed_four_item_slot.sql`
+8. `supabase/seed.sql`
 
 Deploy the source to Vercel with `npm ci` and `npm run build`. The included `vercel.json` calls `/api/notifications/whatsapp/worker` every five minutes. Your Vercel plan must support that frequency; otherwise use a compatible scheduler with `Authorization: Bearer <CRON_SECRET>`. The worker claims five messages per run, checks current buyer consent and order state, sends template variables in their configured order and records provider IDs. Only explicitly rejected transient sends can retry (up to five attempts). Timeouts or interrupted sends are marked for manual review to avoid duplicate messages. Signed status callbacks can recover an accepted send using its internal correlation ID. The admin **WhatsApp log** shows queue, delivery and error state.
 
@@ -79,4 +80,4 @@ Use a Meta test number first, then a small internal pilot. Monitor the admin log
 
 The current positional bodies and variable order are in `docs/WHATSAPP_TEMPLATES.md`. Set the language in `whatsapp_templates.language`. If you already approved older bodies, update them in Meta to match this release before enabling sends. Applying SQL does not create or approve anything in Meta.
 
-For existing projects run only the unapplied files: Phase 1 needs 003, 004, 005, then 006; Phase 2 needs 004, 005, then 006. If 005 is already installed, run only 006. Never run the combined installer on an existing project.
+For existing projects run only the unapplied files: Phase 1 needs 003 through 007; Phase 2 needs 004 through 007. If 006 is already installed, run only 007. Never run the combined installer on an existing project.

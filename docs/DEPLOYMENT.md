@@ -16,7 +16,8 @@ In Supabase SQL Editor, run the files in this order:
 4. `supabase/migrations/004_whatsapp_delivery_fixes.sql`
 5. `supabase/migrations/005_independent_thickness_quantities.sql`
 6. `supabase/migrations/006_fixed_100_sheet_slot_mix.sql`
-7. `supabase/seed.sql`
+7. `supabase/migrations/007_fixed_four_item_slot.sql`
+8. `supabase/seed.sql`
 
 Alternatively, run only `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` in a new project; it includes all of the above. For an upgrade, use `supabase/README_SQL.md` and run only unapplied migrations. These are initial migrations, not scripts to rerun on every deployment. Use migration history or mark completed files. The seed uses stable IDs and does not overwrite existing records.
 
@@ -63,7 +64,7 @@ on conflict (user_id) do nothing;
 
 Refresh PLYDECK after logging in. **Manage** appears in the same top navigation. Other customers do not see it, and all admin API routes also enforce the role server-side.
 
-The seed creates three category records and two five-slot OEM pools attached to the same 32,000 kg shipment. The pools are drafts. In Manage → Pools → Edit pool, confirm both thickness prices and actual batch specs, set a future booking close time, save, then publish.
+The seed creates three category records and two five-slot OEM pools attached to the same 32,000 kg shipment. The pools are drafts. In Manage → Pools → Edit pool, confirm the four MR/BWP ex-factory rate-card values and actual batch specs, set a future booking close time, save, then publish.
 
 ## 5. Push the source to your Git repository
 
@@ -117,7 +118,7 @@ The queue is consent based. Buyers must opt in under Business details. Meta deli
 2. Log in as a separate test buyer, save sample GST/billing details and reserve a slot. Pay 10% using Razorpay's supported test payment methods.
 3. Confirm the webhook and callback mark the same instalment paid once. Refresh or replay the webhook; the paid total must not double.
 4. Test two buyers requesting the same slot; only one can retain an active allocation.
-5. Test the linked selector from 70:30 through 85:15. Changing either thickness must update the other automatically and every slot must remain exactly 100 sheets. Shared payload limits must block an overweight combination.
+5. Confirm no buyer quantity selector is shown. Every slot must display exactly 50 MR 16mm, 20 BWP 16mm, 15 MR 6mm and 15 BWP 6mm, all 8 × 4 ft. A direct API/RPC attempt to change the 70/30 aggregate must fail. Shared payload limits must block an overweight shipment.
 6. Reserve all five slots in one pool. As admin, request the 40% instalment. Pay it as the buyer, then confirm the pool. Confirm the target hub delivery date is seven days later.
 7. Record a detailed QC report. Pay the final 50%. Confirm dispatch stays blocked until all active slots are fully paid.
 8. In another test pool, cancel before confirmation. Review the full refund in admin, verify the Razorpay refund result and webhook settlement.
@@ -136,7 +137,7 @@ The refund endpoint enforces full refunds for PLYDECK cancellation and eligible 
 
 ## 11. Publish the first commercial pools
 
-Before accepting real orders, enter the final seller legal name, GSTIN, business address, support contact and commercial terms; replace provisional product specifications; confirm both purchase rates, transport, packaging, unloading and payload with your suppliers; confirm gateway charges in your pool economics; and complete the connected payment/refund tests.
+Before accepting real orders, enter the final seller legal name, GSTIN, business address, support contact and commercial terms; replace provisional product specifications; confirm all four purchase rates, transport, packaging, unloading and payload with your suppliers; confirm gateway charges in your pool economics; and complete the connected payment/refund tests.
 
 Then put the matching Razorpay Live keys and live webhook secret in Vercel Production, redeploy, and publish the two verified OEM pools through Manage. Keep the two pool allocations aligned with the shared shipment budget. If one pool is cancelled, do not silently surcharge the other: either honour its price or cancel/refund and issue a new offer with consent.
 

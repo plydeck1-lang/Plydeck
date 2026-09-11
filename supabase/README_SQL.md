@@ -5,7 +5,7 @@
 1. Create a dedicated PLYDECK Supabase project.
 2. Open SQL Editor > New query.
 3. Paste the entire `install/PLYDECK_NEW_PROJECT_SETUP.sql` file and click Run.
-4. It installs migrations 001–006 and seed data. Do not also run the individual migrations or seed.
+4. It installs migrations 001–007 and seed data. Do not also run the individual migrations or seed.
 5. Configure Auth/email redirects and app credentials as described in `docs/DEPLOYMENT.md`.
 6. Register and confirm your PLYDECK account in connected mode.
 7. Copy its UUID from Supabase Authentication > Users. Replace the placeholder in `admin/CREATE_FIRST_ADMIN.sql`, then run that script.
@@ -19,18 +19,19 @@ Run only these files, in order:
 2. `migrations/004_whatsapp_delivery_fixes.sql`
 3. `migrations/005_independent_thickness_quantities.sql`
 4. `migrations/006_fixed_100_sheet_slot_mix.sql`
+5. `migrations/007_fixed_four_item_slot.sql`
 
 If 001 was applied but 002 was not, run 002 first. Keep WhatsApp disabled while upgrading. Deploy the matching source after SQL succeeds.
 
 ## C. Existing Phase 2 project (001, 002, 003 already applied)
 
-Run `migrations/004_whatsapp_delivery_fixes.sql`, `migrations/005_independent_thickness_quantities.sql`, then `migrations/006_fixed_100_sheet_slot_mix.sql`, and deploy the matching source. Do not rerun 003.
+Run `migrations/004_whatsapp_delivery_fixes.sql`, `migrations/005_independent_thickness_quantities.sql`, `migrations/006_fixed_100_sheet_slot_mix.sql`, then `migrations/007_fixed_four_item_slot.sql`, and deploy the matching source. Do not rerun 003.
 
-If migration 005 is already installed, run only `migrations/006_fixed_100_sheet_slot_mix.sql`.
+If migration 005 is already installed, run migrations 006 and 007. If migration 006 is already installed, run only `migrations/007_fixed_four_item_slot.sql`.
 
 ## D. Individual files for a new project (alternative to A)
 
-If you prefer separate queries, run 001, 002, 003, 004, 005, 006, then `seed.sql` exactly once in that order. Do not use the combined installer as well.
+If you prefer separate queries, run 001, 002, 003, 004, 005, 006, 007, then `seed.sql` exactly once in that order. Do not use the combined installer as well.
 
 | File | Purpose |
 |---|---|
@@ -40,6 +41,7 @@ If you prefer separate queries, run 001, 002, 003, 004, 005, 006, then `seed.sql
 | 004_whatsapp_delivery_fixes.sql | Correct payment notices, consent checks, deduplication and atomic webhook updates |
 | 005_independent_thickness_quantities.sql | Adds independent 16mm/6mm quantities, 70:30 OEM defaults, range checks and fixed-mix replacement snapshots |
 | 006_fixed_100_sheet_slot_mix.sql | Links both thickness selectors to a mandatory 100-sheet total and limits the mix to 70:30–85:15 |
+| 007_fixed_four_item_slot.sql | Replaces buyer quantity controls with the fixed 50/20/15/15 MR/BWP slot and enforces its four-line rate card |
 | seed.sql | Three categories and two five-slot OEM draft pools |
 | CREATE_FIRST_ADMIN.sql | Assign your existing Auth user the admin role |
 

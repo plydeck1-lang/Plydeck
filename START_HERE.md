@@ -21,9 +21,10 @@ Open http://localhost:3000. Select Bengaluru. Use sample business details in dem
 Open `supabase/README_SQL.md` and choose the matching path:
 
 - New project: run `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` once.
-- Phase 1 already installed: run migrations 003, 004, 005, then 006.
-- Phase 2 already installed: run migrations 004, 005, then 006 in order.
-- Migration 005 already installed: run only migration 006.
+- Phase 1 already installed: run migrations 003, 004, 005, 006, then 007.
+- Phase 2 already installed: run migrations 004, 005, 006, then 007 in order.
+- Migration 005 already installed: run migrations 006 and 007.
+- Migration 006 already installed: run only migration 007.
 
 Keep PLYDECK in its own Supabase project. Set the project's public URL, anon key and server service-role key in `.env.local`. Enable Email Auth and configure redirects. Change `NEXT_PUBLIC_DEMO_MODE=false` for connected mode. Restart the app after environment changes.
 
