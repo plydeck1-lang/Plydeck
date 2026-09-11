@@ -1,0 +1,6 @@
+import {ok,failure,HttpError,serverDb,rpc} from '@/lib/server';
+import {checkSignature,settlePayment} from '@/lib/razorpay-server';
+export async function POST(request:Request){try{const secret=process.env.RAZORPAY_WEBHOOK_SECRET;if(!secret)throw new HttpError(503,'Webhook is not configured.');const raw=await request.text();if(raw.length>1000000)throw new HttpError(413,'Payload too large.');if(!checkSignature(raw,request.headers.get('x-razorpay-signature')??'',secret))throw new HttpError(400,'Invalid webhook signature.');const event=JSON.parse(raw);
+ if(event.event==='payment.captured'||event.event==='order.paid'){const payment=event.payload?.payment?.entity;if(payment?.id)await settlePayment(payment.id);}
+ if(['refund.processed','refund.failed'].includes(event.event)){const entity=event.payload?.refund?.entity;if(entity?.id){const db=serverDb();const{data:task}=await db.from('refund_tasks').select('*').eq('provider_refund_id',entity.id).maybeSingle();if(task){await db.from('refund_tasks').update({status:event.event==='refund.processed'?'processed':'failed'}).eq('id',task.id);await rpc('finish_refund',{p_refund:task.refund_id});}}}
+ return ok({received:true});}catch(e){return failure(e);}}
