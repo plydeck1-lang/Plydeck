@@ -1,0 +1,116 @@
+# PLYDECK · Phase 2 — deployment bundle
+
+Start with `START_HERE.md`. All SQL is in `supabase/`; choose new setup or upgrade in `supabase/README_SQL.md`. This bundle includes migration 006 for the linked, fixed 100-sheet OEM mix.
+
+A city-first plywood buying webapp for retailers and contractors. Built with Next.js App Router, React, TypeScript, Supabase and Razorpay, for deployment on Vercel.
+
+## Start in VS Code
+
+1. Extract this ZIP to a new folder, for example `C:\plydeck`. Open the folder containing `package.json` in VS Code.
+2. Use Node.js 22.13+ or 24 LTS. Open a terminal in that folder.
+3. Run:
+
+```powershell
+npm.cmd ci
+Copy-Item .env.example .env.local
+npm.cmd run dev
+```
+
+4. Open `http://localhost:3000`. Select Bengaluru. The demo flag in `.env.local` enables a local preview without Supabase or Razorpay credentials.
+5. Choose a pool, select slots, adjust the mix and accept the terms. Continue as a demo buyer and enter sample business details. Use a syntactically valid sample GSTIN such as `29ABCDE1234F1Z5` only in demo.
+6. Click **Explore admin** in the demo banner to edit categories, pools and shared shipments. Demo state is stored only in this browser. It does not create Supabase rows or collect money.
+
+To reset the demo, clear the browser's `plydeck-demo-v1` local-storage entry. City preference is stored as `plydeck-city`.
+
+## What is included
+
+- Public city-first storefront, plywood categories and detailed product specifications.
+- Two Bengaluru OEM pools, five slots each, standard 8 × 4 ft.
+- Exactly 100 sheets per slot. Default 70 × 16mm + 30 × 6mm; buyers can shuffle the linked mix through 85 × 16mm + 15 × 6mm.
+- Customer price summary shows the two ex-factory reference rates, taxable order value, 18% GST and final total. Internal operations allocations remain in the locked quote for accounting and audit without being itemized to the buyer.
+- Per-order staged payments: 10% booking, 40% confirmation, 50% after QC and before dispatch. Percentages apply to the buyer's order total including GST, not the whole pool.
+- Business login, registration, email verification, password reset, GST and billing profile.
+- Customer order history within the same storefront, QC report and payment actions.
+- In-app admin for category visibility and images, pool configuration and publication, shared shipment capacity, orders, QC, refunds, default notices and FIFO waiting-list offers.
+- Supabase row-level security; server-only privileged RPCs; atomic slot allocation and shared payload checks; immutable quotes after reservation.
+- Razorpay server order creation, checkout signature checks, captured-payment verification, signed webhook handling, payment reconciliation and idempotent refunds.
+- Consent-based WhatsApp Cloud API outbox, approved-template worker, signed webhook delivery updates, inbound message log and in-app admin WhatsApp log.
+- A 15-minute unpaid checkout hold. Late or duplicate captured payments enter a full-refund queue instead of taking another buyer's slot.
+- Post-QC replacements use the released slot's existing sheet mix. They cannot change already produced goods. All three instalments must still clear before dispatch.
+
+## Initial pricing assumptions
+
+The two pools share one 32,000 kg cargo-payload shipment with a 600 kg packing allowance. Default goods weight is 28,000 kg. Provisional sheet weights are 32 kg for 16mm and 12 kg for 6mm.
+
+The ₹56/sqft factory rate is applied to BOTH thicknesses. It is not an independently verified quote for 6mm. Change both fields to the actual supplier prices.
+
+Combined freight is a ₹50,000 worked assumption. Total allocated operations across the two pools are ₹94,000, including one month's ₹18,000 rent. Each pool receives half, and its five slots each receive one fifth of that allocation. Allocations are fixed per slot, even if its thickness mix changes. This is a published bundle allocation, not a claim of actual per-slot freight by weight. Weight is separately enforced for truck capacity.
+
+The ₹2/sqft trading spread and ₹0.25/sqft rounding increment produce a default ₹61/sqft before GST. One default 70:30 slot is ₹1,95,200 + ₹35,136 GST = ₹2,30,336. Payments are ₹23,033.60, ₹92,134.40 and ₹1,15,168.00. A buyer’s total can change with the selected linked mix when the two thickness rates differ; gateway charges, general overhead and financing reduce the trading contribution. Recoverable input GST is excluded from cost; nonrecoverable taxes must be included.
+
+All money in quotes, payments and refunds is integer paise. GST is calculated on the complete taxable value. The last instalment absorbs paise rounding so the stages always sum to the total. Pool totals reconcile to the sum of accepted customer orders; don't recalculate historical orders from a revised rate card.
+
+## Next: connect Supabase, Razorpay and WhatsApp
+
+Follow `docs/DEPLOYMENT.md` in order, then complete `docs/WHATSAPP_SETUP.md` for Meta templates and webhook verification. The source contains the integration, but no credentials have been connected and no external payment was made or verified in this build session. Use Razorpay Test Mode for the first connected checkout and refund.
+
+Production seed pools start as drafts so the provisional factory specifications and freight assumptions cannot accidentally become paid offers. Edit the draft pool, replace pending specifications, verify commercial terms, and use Publish pool to make it visible. In demo mode, both sample pools are open immediately.
+
+## WhatsApp integration
+
+Read `docs/WHATSAPP_SETUP.md` before enabling provider sends. WhatsApp is disabled by default and only opted-in buyers are messaged. The queue uses approved utility templates, server-only credentials, signed webhook validation, retry limits and a provider status log.
+
+## Operational boundaries
+
+- This is a responsive webapp, not an Android/iOS store binary.
+- WhatsApp notifications are included in Phase 2. Sending remains disabled until Meta credentials, approved utility templates, webhook verification and `WHATSAPP_ENABLED=true` are configured. Demo mode never sends messages. Staff must still deliver written default notices and record their reference before the cure period and reassignment.
+- The one-week delivery date is a target starting at final pool confirmation after every required 50% payment clears. It is not an unconditional transit guarantee.
+- The source includes draft commercial terms. Replace seller legal identity, contact, jurisdiction and support details with the actual operating entity before launch, and obtain an India-specific review of the retention clause. Seller/supplier failure is refundable; buyer-default retention is subject to reasonable compensation and resale recovery.
+- Default is an audited admin action after a written notice and 48-hour cure period. It does not automatically forfeit funds or send unsolicited messages.
+- The storefront exposes accurate reservation/hold counts. There are no fabricated live bookings or invented waiting buyers.
+- Admin pool prices and specs lock after the first reservation, including an expired reservation. Create a new pool for changed commercial terms. This preserves the accepted quotation history.
+- Current admin lists are designed for the first pilot. Add server pagination and operational reporting as order volumes grow.
+- A queued refund requires admin review and provider settlement. API timeouts are not reported as a successful refund; reuse the same refund task to retry.
+
+## Verification
+
+```powershell
+npm.cmd run test
+npm.cmd run build
+```
+
+The tests run pricing and signature checks plus PostgreSQL-compatible integration tests using PGlite: schema application, slot exclusivity, shared payload limits, payment milestones, duplicate/late payments, refund protection, administrator permissions and waiting-list replacement. They do not connect to a live Supabase project or Razorpay account. Hosted browser and provider tests remain deployment gates.
+
+## Project map
+
+| Path | Purpose |
+|---|---|
+| `components/storefront.tsx` | Storefront, login, slot configuration and customer orders |
+| `components/admin-panel.tsx` | In-app admin controls |
+| `components/terms.tsx` | Versioned customer terms |
+| `lib/pricing.ts` | Deterministic quote and instalment calculations |
+| `lib/validation.ts` | Server input validation |
+| `lib/server.ts` | Server identity, admin checks and RPC helpers |
+| `lib/razorpay-server.ts` | Provider calls, verification and refunds |
+| `lib/whatsapp-server.ts` | Meta payloads, phone normalization, queue worker helpers and webhook signatures |
+| `app/api/` | Authenticated server endpoints |
+| `supabase/migrations/` | Schema, security, transaction functions and WhatsApp outbox triggers |
+| `supabase/seed.sql` | Production draft categories and pools |
+| `tests/` | Pricing, database and WhatsApp utility checks |
+
+The representative plywood photograph is original AI-generated catalog imagery. It does not depict a verified factory batch. Google Fonts are loaded over HTTPS with local system-font fallbacks.
+
+## Reference documentation
+
+- Supabase authenticated user validation: https://supabase.com/docs/reference/javascript/auth-getuser
+- Razorpay integration and payment verification: https://razorpay.com/docs/payments/server-integration/nodejs/integration-steps/
+- Razorpay signed webhooks: https://razorpay.com/docs/webhooks/validate-test/
+- Razorpay idempotent refunds: https://razorpay.com/docs/api/refunds/normal-refunds-idempotent/
+- Indian Contract Act, section 74: https://www.incometaxindia.gov.in/w/section-74-104
+
+## Phases
+
+1. **Phase 1:** complete pilot source, local demo, admin, schema and payment integration code.
+2. **This delivery (Phase 2):** consent-based Meta WhatsApp queue, worker, signed webhook, admin log and setup documentation.
+3. **Connect and verify:** dedicated Supabase project, first admin account, Razorpay test checkout/webhooks/refund, Meta test recipient, Vercel preview and browser testing.
+4. **Pilot launch:** confirmed material specs and freight, reviewed seller terms, real payment credentials, buyer onboarding and the first two published pools.
