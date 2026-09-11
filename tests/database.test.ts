@@ -1,3 +1,4 @@
+import {poolSchema} from '../lib/validation';
 import {test}from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{PGlite}from'@electric-sql/pglite';
 import{demoSeed,POOL_ONE,POOL_TWO}from'../lib/seed';import{quoteSlot}from'../lib/pricing';
 const ADMIN='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',BUYER='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',OTHER='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
@@ -68,3 +69,28 @@ test('deployment SQL: combined installer, rerun guard and first-admin script',as
  await assert.rejects(()=>db.exec(readFileSync('supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql','utf8')),/Existing tables found/);await db.exec('rollback');
  assert.equal((await db.query<any>('select * from pools')).rows.length,2);
 }finally{await db.close();}});
+
+
+test('admin pool regression: save an unchanged offset date, complete specifications and publish; create on another shipment',async()=>{
+ const db=await database();try{
+  await db.query("update pools set status='draft' where id=$1",[POOL_ONE]);
+  await assert.rejects(()=>db.query('select transition_pool($1,$2,$3,$4)',[ADMIN,POOL_ONE,'publish','']),/pending factory specifications/);
+  const source={...demoSeed().pools[0],name:'Renamed regression pool',closes_at:'2099-09-14T06:58:00+00:00'};
+  const parsed=poolSchema.parse(source);
+  await db.query('select save_pool($1,$2)',[ADMIN,JSON.stringify(parsed)]);
+  assert.equal((await db.query<any>('select name from pools where id=$1',[POOL_ONE])).rows[0].name,source.name);
+  await assert.rejects(()=>db.query('select transition_pool($1,$2,$3,$4)',[ADMIN,POOL_ONE,'publish','']),/pending factory specifications/);
+  parsed.config.bond='Confirmed test fixture bond';parsed.config.tolerance='Confirmed test fixture tolerance';
+  await db.query('select save_pool($1,$2)',[ADMIN,JSON.stringify(parsed)]);
+  await db.query('select transition_pool($1,$2,$3,$4)',[ADMIN,POOL_ONE,'publish','']);
+  assert.equal((await db.query<any>('select status from pools where id=$1',[POOL_ONE])).rows[0].status,'live');
+  const newPool={...parsed,id:'77777777-7777-4777-8777-777777777777',code:'BLR-OEM-003'};
+  await assert.rejects(()=>db.query('select save_pool($1,$2)',[ADMIN,JSON.stringify(newPool)]),/shipment payload/);
+  const shipment={id:'88888888-8888-4888-8888-888888888888',name:'Second test truck',origin:'Perumbavoor',destination:'Bengaluru',payload_kg:16000,packing_kg:300};
+  await db.query('select save_shipment($1,$2)',[ADMIN,JSON.stringify(shipment)]);
+  newPool.shipment_id=shipment.id;
+  await db.query('select save_pool($1,$2)',[ADMIN,JSON.stringify(newPool)]);
+  await db.query('select transition_pool($1,$2,$3,$4)',[ADMIN,newPool.id,'publish','']);
+  assert.equal((await db.query<any>('select status from pools where id=$1',[newPool.id])).rows[0].status,'live');
+ }finally{await db.close();}
+});
