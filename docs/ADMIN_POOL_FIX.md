@@ -42,7 +42,7 @@ Drafts can be saved while supplier specifications are pending; publication remai
 
 ## Add a third pool or another truckload
 
-The seeded figures are planning estimates: each default five-slot pool is 14,000 kg, and the shared shipment includes 600 kg of packing. Two pools therefore reserve 28,600 kg of its 32,000 kg payload. Another identical pool would bring it to 42,600 kg and is correctly rejected.
+The seeded figures are planning estimates: each default five-slot pool is 13,000 kg (70 × 16mm + 30 × 6mm per slot), and the shared shipment includes 600 kg of packing. Two pools therefore reserve 26,600 kg of its 32,000 kg payload. Another identical pool would bring it to 39,600 kg and is correctly rejected.
 
 For a separate truckload, create a shipment under **Manage → Shipments → Add shipment**, enter the carrier-confirmed legal cargo payload and packing allowance, save it, then select it under **Shared shipment** in the new pool. If sharing the existing truck, use a mix and slot count that fit its remaining capacity. Existing reservations may change the available capacity; the database makes the final check.
 

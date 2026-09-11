@@ -3,7 +3,10 @@ export type Stage = 'booking'|'confirmation'|'dispatch';
 export type Costs = {transport:number; unloading:number; pickup_loading:number; factory_packing:number; insurance:number; contingency:number; warehouse:number};
 export type PoolConfig = {
   thickness_primary:number; thickness_secondary:number; length_ft:number; width_ft:number;
-  sheets_per_slot:number; default_primary:number; min_primary:number; max_primary:number;
+  /** Default combined sheet count. Kept in the stored config for compatibility and audit snapshots. */
+  sheets_per_slot:number;
+  default_primary:number; min_primary:number; max_primary:number;
+  default_secondary:number; min_secondary:number; max_secondary:number;
   primary_rate:number; secondary_rate:number; margin_rate:number; rounding_rate:number; gst_percent:number;
   primary_weight:number; secondary_weight:number; costs:Costs;
   core:string; face:string; bond:string; tolerance:string; specification:string;
@@ -17,4 +20,4 @@ export type Quote={primary_qty:number;secondary_qty:number;slot_count:number;she
 export type Order={id:string;pool_id:string;user_id:string;slot_numbers:number[];primary_qty:number;secondary_qty:number;status:string;quote:Quote;paid_amount:number;created_at:string;expires_at?:string;profile_snapshot?:Profile;refund_reason?:string;replacement?:boolean;payment_due_at?:string};
 export type WhatsAppMessageStatus='queued'|'sending'|'sent'|'delivered'|'read'|'failed'|'skipped';
 export type WhatsAppMessage={id:string;order_id?:string|null;pool_id?:string|null;user_id?:string|null;recipient_phone:string;purpose:string;template_name:string;template_language:string;variables?:Record<string,string>;variable_order?:string[];status:WhatsAppMessageStatus;provider_message_id?:string|null;error_code?:string|null;error_message?:string|null;attempts?:number;last_attempt_at?:string|null;created_at:string;sent_at?:string|null;delivered_at?:string|null;read_at?:string|null};
-export type StoreData={categories:Category[];pools:Pool[];shipments:Shipment[];profile?:Profile|null;orders?:Order[];isAdmin?:boolean;waitlist?:{id:string;pool_id:string;user_id:string;created_at:string;status:string;offered_slot?:number;offered_primary?:number;offer_expires_at?:string}[];refunds?:{id:string;order_id:string;amount:number;status:string;reason:string}[];whatsappMessages?:WhatsAppMessage[];whatsapp?:{enabled:boolean;configured:boolean;reason?:string}};
+export type StoreData={categories:Category[];pools:Pool[];shipments:Shipment[];profile?:Profile|null;orders?:Order[];isAdmin?:boolean;waitlist?:{id:string;pool_id:string;user_id:string;created_at:string;status:string;offered_slot?:number;offered_primary?:number;offered_secondary?:number;offer_expires_at?:string}[];refunds?:{id:string;order_id:string;amount:number;status:string;reason:string}[];whatsappMessages?:WhatsAppMessage[];whatsapp?:{enabled:boolean;configured:boolean;reason?:string}};

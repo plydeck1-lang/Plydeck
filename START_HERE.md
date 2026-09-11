@@ -2,9 +2,11 @@
 
 This source archive contains the whole Next.js webapp, not an update-only patch. It includes all SQL, the public storefront, pool/slot configuration, business login, GST pricing, 10/40/50 Razorpay payments, admin controls and WhatsApp integration code.
 
+Important: extract the archive directly into the folder whose `package.json` belongs to PLYDECK. Do not leave the extracted source as a child folder inside an older PLYDECK project. A nested copy causes the parent TypeScript configuration to compile new components against old root types.
+
 ## 1. Run the local demo in VS Code on Windows
 
-Extract to a new folder such as `C:\plydeck`. Open the folder containing `package.json` in VS Code. In Terminal > New Terminal:
+Extract to a new folder such as `C:\plydeck`, or extract directly over your existing repository root after preserving `.env.local`. Open the one folder containing `package.json`, `app`, `components` and `lib` together in VS Code. In Terminal > New Terminal:
 
 ```powershell
 npm.cmd ci
@@ -19,8 +21,9 @@ Open http://localhost:3000. Select Bengaluru. Use sample business details in dem
 Open `supabase/README_SQL.md` and choose the matching path:
 
 - New project: run `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` once.
-- Phase 1 already installed: run migrations 003, then 004.
-- Phase 2 already installed: run migration 004 only.
+- Phase 1 already installed: run migrations 003, 004, 005, then 006.
+- Phase 2 already installed: run migrations 004, 005, then 006 in order.
+- Migration 005 already installed: run only migration 006.
 
 Keep PLYDECK in its own Supabase project. Set the project's public URL, anon key and server service-role key in `.env.local`. Enable Email Auth and configure redirects. Change `NEXT_PUBLIC_DEMO_MODE=false` for connected mode. Restart the app after environment changes.
 

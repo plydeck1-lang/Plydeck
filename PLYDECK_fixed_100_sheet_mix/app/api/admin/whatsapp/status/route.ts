@@ -1,4 +1,0 @@
-import {adminIdentity,serverDb,ok,failure} from '@/lib/server';
-import {whatsappConfig} from '@/lib/whatsapp-server';
-export const dynamic='force-dynamic';
-export async function GET(request:Request){try{const user=await adminIdentity(request);const config=whatsappConfig();const db=serverDb();const [{count:queued},{count:sent},{count:failed},{count:templates}]=await Promise.all([db.from('whatsapp_messages').select('*',{count:'exact',head:true}).in('status',['queued','sending']),db.from('whatsapp_messages').select('*',{count:'exact',head:true}).in('status',['sent','delivered','read']),db.from('whatsapp_messages').select('*',{count:'exact',head:true}).eq('status','failed'),db.from('whatsapp_templates').select('*',{count:'exact',head:true})]);return ok({enabled:config.enabled,configured:config.configured,reason:config.reason,templates:templates??0,queue:{queued:queued??0,sent:sent??0,failed:failed??0},admin_user:user.id});}catch(e){return failure(e);}}

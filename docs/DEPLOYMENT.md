@@ -14,7 +14,9 @@ In Supabase SQL Editor, run the files in this order:
 2. `supabase/migrations/002_replacement_slots.sql`
 3. `supabase/migrations/003_whatsapp_notifications.sql`
 4. `supabase/migrations/004_whatsapp_delivery_fixes.sql`
-5. `supabase/seed.sql`
+5. `supabase/migrations/005_independent_thickness_quantities.sql`
+6. `supabase/migrations/006_fixed_100_sheet_slot_mix.sql`
+7. `supabase/seed.sql`
 
 Alternatively, run only `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` in a new project; it includes all of the above. For an upgrade, use `supabase/README_SQL.md` and run only unapplied migrations. These are initial migrations, not scripts to rerun on every deployment. Use migration history or mark completed files. The seed uses stable IDs and does not overwrite existing records.
 
@@ -115,7 +117,7 @@ The queue is consent based. Buyers must opt in under Business details. Meta deli
 2. Log in as a separate test buyer, save sample GST/billing details and reserve a slot. Pay 10% using Razorpay's supported test payment methods.
 3. Confirm the webhook and callback mark the same instalment paid once. Refresh or replay the webhook; the paid total must not double.
 4. Test two buyers requesting the same slot; only one can retain an active allocation.
-5. Test 60:40 and 100:0 mixes. Shared payload limits must block an overweight combination.
+5. Test the linked selector from 70:30 through 85:15. Changing either thickness must update the other automatically and every slot must remain exactly 100 sheets. Shared payload limits must block an overweight combination.
 6. Reserve all five slots in one pool. As admin, request the 40% instalment. Pay it as the buyer, then confirm the pool. Confirm the target hub delivery date is seven days later.
 7. Record a detailed QC report. Pay the final 50%. Confirm dispatch stays blocked until all active slots are fully paid.
 8. In another test pool, cancel before confirmation. Review the full refund in admin, verify the Razorpay refund result and webhook settlement.

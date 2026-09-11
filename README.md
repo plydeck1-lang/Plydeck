@@ -1,12 +1,12 @@
 # PLYDECK · Phase 2 — deployment bundle
 
-Start with `START_HERE.md`. All SQL is in `supabase/`; choose new setup or upgrade in `supabase/README_SQL.md`. This bundle includes migration 004 for WhatsApp correctness and delivery handling.
+Start with `START_HERE.md`. All SQL is in `supabase/`; choose new setup or upgrade in `supabase/README_SQL.md`. This bundle includes migration 006 for the linked, fixed 100-sheet OEM mix.
 
 A city-first plywood buying webapp for retailers and contractors. Built with Next.js App Router, React, TypeScript, Supabase and Razorpay, for deployment on Vercel.
 
 ## Start in VS Code
 
-1. Extract this ZIP to a new folder, for example `C:\plydeck`. Open the folder containing `package.json` in VS Code.
+1. Extract this ZIP to a new folder, for example `C:\plydeck`, or directly over the existing repository root after preserving `.env.local`. Do not keep it as a nested folder inside an older PLYDECK project. Open the folder containing `package.json`, `app`, `components` and `lib` together in VS Code.
 2. Use Node.js 22.13+ or 24 LTS. Open a terminal in that folder.
 3. Run:
 
@@ -25,9 +25,9 @@ To reset the demo, clear the browser's `plydeck-demo-v1` local-storage entry. Ci
 ## What is included
 
 - Public city-first storefront, plywood categories and detailed product specifications.
-- Two Bengaluru OEM pools, five slots each, 100 sheets per slot, standard 8 × 4 ft.
-- Default 80 × 16mm + 20 × 6mm; configurable 60:40 through 100:0, subject to shared truck capacity.
-- Detailed ex-factory, freight, unloading, pickup loading, packing, insurance, contingency, warehouse, spread, rounding and 18% GST breakdown.
+- Two Bengaluru OEM pools, five slots each, standard 8 × 4 ft.
+- Exactly 100 sheets per slot. Default 70 × 16mm + 30 × 6mm; buyers can shuffle the linked mix through 85 × 16mm + 15 × 6mm.
+- Customer price summary shows the two ex-factory reference rates, taxable order value, 18% GST and final total. Internal operations allocations remain in the locked quote for accounting and audit without being itemized to the buyer.
 - Per-order staged payments: 10% booking, 40% confirmation, 50% after QC and before dispatch. Percentages apply to the buyer's order total including GST, not the whole pool.
 - Business login, registration, email verification, password reset, GST and billing profile.
 - Customer order history within the same storefront, QC report and payment actions.
@@ -46,7 +46,7 @@ The ₹56/sqft factory rate is applied to BOTH thicknesses. It is not an indepen
 
 Combined freight is a ₹50,000 worked assumption. Total allocated operations across the two pools are ₹94,000, including one month's ₹18,000 rent. Each pool receives half, and its five slots each receive one fifth of that allocation. Allocations are fixed per slot, even if its thickness mix changes. This is a published bundle allocation, not a claim of actual per-slot freight by weight. Weight is separately enforced for truck capacity.
 
-The ₹2/sqft trading spread and ₹0.25/sqft rounding increment produce a default ₹61/sqft before GST. One default slot is ₹1,95,200 + ₹35,136 GST = ₹2,30,336. Payments are ₹23,033.60, ₹92,134.40 and ₹1,15,168.00. Gateway charges, general overhead and financing reduce the trading contribution; add relevant actual costs before publishing. Recoverable input GST is excluded from cost; nonrecoverable taxes must be included.
+The ₹2/sqft trading spread and ₹0.25/sqft rounding increment produce a default ₹61/sqft before GST. One default 70:30 slot is ₹1,95,200 + ₹35,136 GST = ₹2,30,336. Payments are ₹23,033.60, ₹92,134.40 and ₹1,15,168.00. A buyer’s total can change with the selected linked mix when the two thickness rates differ; gateway charges, general overhead and financing reduce the trading contribution. Recoverable input GST is excluded from cost; nonrecoverable taxes must be included.
 
 All money in quotes, payments and refunds is integer paise. GST is calculated on the complete taxable value. The last instalment absorbs paise rounding so the stages always sum to the total. Pool totals reconcile to the sum of accepted customer orders; don't recalculate historical orders from a revised rate card.
 

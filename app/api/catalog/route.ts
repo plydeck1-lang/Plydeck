@@ -4,7 +4,7 @@ export const dynamic='force-dynamic';
 export async function GET(request:Request){try{
  const db=serverDb(),user=await identity(request,false);let isAdmin=false;if(user){const{data}=await db.from('admins').select('user_id').eq('user_id',user.id).maybeSingle();isAdmin=!!data;}
  await rpc('expire_holds',{});
- const results=await Promise.all([db.from('categories').select('*').order('name'),db.from('pools').select('*').order('code'),db.from('shipments').select('*'),db.from('slot_allocations').select('pool_id,slot_no,order_id'),db.from('waitlist').select('id,pool_id,user_id,created_at,status,offered_slot,offered_primary,offer_expires_at')]);
+ const results=await Promise.all([db.from('categories').select('*').order('name'),db.from('pools').select('*').order('code'),db.from('shipments').select('*'),db.from('slot_allocations').select('pool_id,slot_no,order_id'),db.from('waitlist').select('id,pool_id,user_id,created_at,status,offered_slot,offered_primary,offered_secondary,offer_expires_at')]);
  for(const r of results)if(r.error)throw r.error;
  const[categories,poolRows,shipments,allocations,waiting]=results.map(r=>r.data??[]) as any[][];
  let profile=null,orders:any[]=[],refunds:any[]=[],whatsappMessages:any[]=[];

@@ -3,11 +3,13 @@ export const TERMS_VERSION='2026-09-p1';
 export const COST_LABELS:Record<keyof Costs,string>={transport:'Factory → Bengaluru freight',unloading:'Warehouse unloading',pickup_loading:'Loading for collection',factory_packing:'Factory loading & packing',insurance:'Transit insurance',contingency:'Handling contingency',warehouse:'Transit warehouse allocation'};
 export const money=(paise:number,decimals=0)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:decimals,maximumFractionDigits:decimals}).format(paise/100);
 export const rupees=(value:number)=>money(Math.round(value*100),2);
-export function quoteSlot(pool:Pool,primary:number,slots=1):Quote{
+export function quoteSlot(pool:Pool,primary:number,secondary:number,slots=1):Quote{
  const c=pool.config;
- if(!Number.isInteger(primary)||primary<c.min_primary||primary>c.max_primary)throw new Error(`Choose ${c.min_primary}–${c.max_primary} primary sheets per slot.`);
+ if(!Number.isInteger(primary)||primary<c.min_primary||primary>c.max_primary)throw new Error(`Choose ${c.min_primary}–${c.max_primary} sheets of ${c.thickness_primary}mm plywood per slot.`);
+ if(!Number.isInteger(secondary)||secondary<c.min_secondary||secondary>c.max_secondary)throw new Error(`Choose ${c.min_secondary}–${c.max_secondary} sheets of ${c.thickness_secondary}mm plywood per slot.`);
+ if(primary+secondary!==c.sheets_per_slot)throw new Error(`Each slot must contain exactly ${c.sheets_per_slot} sheets.`);
  if(!Number.isInteger(slots)||slots<1||slots>pool.total_slots)throw new Error('Invalid slot count.');
- const secondary=c.sheets_per_slot-primary, area=c.sheets_per_slot*c.length_ft*c.width_ft*slots;
+ const area=c.sheets_per_slot*c.length_ft*c.width_ft*slots;
  const unitArea=c.length_ft*c.width_ft;
  const lines=[{label:`${c.thickness_primary}mm plywood · ex-factory`,amount:Math.round(primary*slots*unitArea*c.primary_rate*100),basis:`${primary*slots} sheets × ${unitArea} sqft × ₹${c.primary_rate}`},
  {label:`${c.thickness_secondary}mm plywood · ex-factory`,amount:Math.round(secondary*slots*unitArea*c.secondary_rate*100),basis:`${secondary*slots} sheets × ${unitArea} sqft × ₹${c.secondary_rate}`}];
