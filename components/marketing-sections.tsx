@@ -16,19 +16,18 @@ import {
   MapPinned,
   PackageCheck,
   ShieldCheck,
-  Sparkles,
   Truck,
   Warehouse,
 } from "lucide-react";
 
 const materialCategories = [
-  { name: "Plywood", note: "Live pools", icon: Layers3, live: true },
-  { name: "MDF, HDF & HDHMR", note: "Planned", icon: Boxes },
-  { name: "Laminates", note: "Planned", icon: Sparkles },
-  { name: "Furniture hardware", note: "Planned", icon: PackageCheck },
-  { name: "Adhesives", note: "Planned", icon: Handshake },
-  { name: "Flush doors", note: "Planned", icon: Building2 },
-  { name: "Prelam boards", note: "Planned", icon: Warehouse },
+  { name: "OEM Grade Hardwood Calibrated Okoume Face", note: "Live pools", icon: Layers3, live: true },
+  { name: "OEM Grade Hardwood Calibrated Recon Face", note: "Live pools", icon: Factory, live: true },
+  { name: "Alternate ISI Gurjan Face", note: "Live pools", icon: ShieldCheck, live: true },
+  { name: "Full Red Core Plywood", note: "Live pools", icon: Boxes, live: true },
+  { name: "Semi-Calibrated Hardwood Okoume Face", note: "Live pools", icon: PackageCheck, live: true },
+  { name: "Neem & Eucalyptus Plywood", note: "Live pools", icon: Warehouse, live: true },
+  { name: "PF 710 Plywood", note: "Live pools", icon: ClipboardCheck, live: true },
 ];
 
 const audiences = [
@@ -133,12 +132,12 @@ export function MaterialCategoryShowcase({
     <section className="material-showcase" id="materials">
       <div className="marketing-heading">
         <div>
-          <span className="brand-kicker">MATERIALS, ORGANISED FOR B2B</span>
-          <h2>Start with plywood. Expand with verified demand.</h2>
+          <span className="brand-kicker">PLYWOOD CATEGORIES, ORGANISED FOR B2B</span>
+          <h2>Choose the plywood category your business needs.</h2>
         </div>
         <p>
-          A focused plywood marketplace today, built to open new pooled material
-          categories as city demand becomes commercially viable.
+          Browse category-led live pools with published specifications, fixed
+          buying slots and city-based fulfilment.
         </p>
       </div>
       <div className="material-rail" aria-label="PLYDECK material categories">

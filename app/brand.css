@@ -116,12 +116,12 @@ select:focus-visible, summary:focus-visible { outline-color: var(--primary); }
 
 .material-showcase, .audience-section, .factory-network, .process-section, .faq-section { max-width: 1320px; margin: 0 auto 92px; }
 .material-rail { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
-.material-tile { min-height: 176px; border: 1px solid var(--line); background: rgba(255,255,255,.58); border-radius: 15px; text-align: left; padding: 17px 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; color: var(--forest); cursor: default; }
+.material-tile { min-height: 218px; border: 1px solid var(--line); background: #fff; border-radius: 15px; text-align: left; padding: 17px 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; color: var(--forest); cursor: default; }
 .material-tile.is-live { cursor: pointer; background: var(--cream); border-color: rgba(168,114,77,.34); box-shadow: inset 0 -3px 0 var(--primary); }
 .material-tile.is-live:hover { transform: translateY(-2px); background: white; }
 .material-tile .material-icon { width: 45px; height: 45px; display: grid; place-items: center; border-radius: 50%; background: var(--secondary-soft); color: var(--forest); margin-bottom: 12px; }
 .material-tile.is-live .material-icon { background: var(--primary); color: white; }
-.material-tile strong { font-size: 14px; line-height: 1.3; }
+.material-tile strong { font-size: 13px; line-height: 1.42; }
 .material-tile small { color: #718083; font-size: 11px; }
 .material-tile>svg { margin-top: auto; color: var(--primary-dark); }
 
@@ -313,7 +313,7 @@ th { background: var(--secondary-soft); color: var(--forest); }
   .policy-header, .policy-main { margin-left: 20px; margin-right: 20px; }
   .material-showcase, .audience-section, .factory-network, .process-section, .faq-section { margin-bottom: 70px; }
   .material-rail { grid-template-columns: repeat(2, 1fr); }
-  .material-tile { min-height: 160px; }
+  .material-tile { min-height: 205px; }
   .pool-card-image { height: 190px; min-height: 190px; }
   .moat-section { padding: 66px 20px; margin-bottom: 70px; }
   .moat-grid article { min-height: 205px; padding: 22px; }
@@ -363,7 +363,7 @@ th { background: var(--secondary-soft); color: var(--forest); }
   .hero-stat { right: 12px; }
   .image-tag { left: 20px; bottom: 32px; }
   .image-tag small { font-size: 16px; }
-  .material-tile { min-height: 145px; padding: 14px; }
+  .material-tile { min-height: 218px; padding: 14px; }
   .material-tile .material-icon { width: 39px; height: 39px; margin-bottom: 6px; }
   .marketing-heading h2, .moat-intro h2, .faq-heading h2, .home-cta h2 { font-size: 2.05rem; }
   .moat-grid { grid-template-columns: 1fr; }
