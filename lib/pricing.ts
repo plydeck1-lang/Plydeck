@@ -62,7 +62,7 @@ export function quoteSlot(pool: Pool, slots = 1): Quote {
     throw new Error("Invalid slot count.");
   const area = FIXED_SHEETS_PER_SLOT * 32 * slots;
   const lines = FIXED_SLOT_ITEMS.map((item) => ({
-    label: `${item.name} · ${item.thickness}mm · ${item.size} · ex-factory`,
+    label: `${item.name} · ${item.thickness}mm · ${item.size} · rate per sft`,
     amount: Math.round(
       item.quantity * slots * 32 * c.rate_card[item.rateKey] * 100,
     ),

@@ -876,7 +876,7 @@ export default function Storefront() {
               <div>
                 <h3>Your material. Your numbers. No guesswork.</h3>
                 <p>
-                  See the ex-factory reference rates, taxable value, GST and all
+                  See the rate per sft, taxable value, GST and all
                   three payments before you book.
                 </p>
               </div>
@@ -1334,8 +1334,7 @@ function FixedSlotContents({ pool }: { pool: Pool }) {
           </strong>
           <b>{item.quantity} sheets</b>
           <small className="fixed-slot-rate">
-            Ex-factory rate · {rupees(pool.config.rate_card[item.rateKey])}
-            /sqft
+            Rate per sft · {rupees(pool.config.rate_card[item.rateKey])}/sft + GST
           </small>
         </div>
       ))}

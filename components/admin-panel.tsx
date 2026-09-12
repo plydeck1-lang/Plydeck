@@ -1017,7 +1017,7 @@ function PoolEditor({
           </small>
         </span>
         <span>
-          Ex-factory ₹/sqft
+          Rate per sft (₹) + GST
           <input
             type="number"
             min={0.01}
@@ -1164,7 +1164,7 @@ function PoolEditor({
           <h3>Fixed slot contents &amp; default rate card</h3>
           <p className="muted">
             Every slot contains these 100 sheets. Grade, thickness, size and
-            quantity are locked; set only the current ex-factory rate for each
+            quantity are locked; set only the current rate per sft for each
             plywood item.
           </p>
           <div className="admin-rate-card">
