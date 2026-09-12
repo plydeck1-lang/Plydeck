@@ -24,10 +24,11 @@ To reset the demo, clear the browser's `plydeck-demo-v1` local-storage entry. Ci
 
 ## What is included
 
-- Public city-first storefront, plywood categories and detailed product specifications.
+- Branded city-first storefront using PLYDECK copper `#a8724d` and deep teal `#0d373f`, with material categories, moat, two-sided value carousel, process guide, FAQs and responsive navigation.
+- Public About, Terms, Refund, Privacy and Shipping & Delivery pages, plus sitemap and robots routes.
 - Two Bengaluru OEM pools, five slots each, standard 8 × 4 ft.
 - Exactly 100 fixed 8 × 4 ft sheets per slot: 50 MR 16mm, 20 BWP 16mm, 15 MR 6mm and 15 BWP 6mm. Buyers choose slot numbers only; they cannot change quantities.
-- Admin rate card stores a separate ex-factory ₹/sqft rate for each of the four fixed items. The customer summary shows those plywood lines, taxable order value, 18% GST and final total. Internal operations allocations remain in the locked quote for accounting and audit without being itemized to the buyer.
+- Admin rate card stores a separate rate per sft for each of the four fixed items. The storefront shows each rate with `+ GST`; the customer summary shows the four plywood lines, taxable order value, 18% GST and final total. Internal operations allocations remain in the locked quote for accounting and audit without being itemized to the buyer.
 - Per-order staged payments: 10% booking, 40% confirmation, 50% after QC and before dispatch. Percentages apply to the buyer's order total including GST, not the whole pool.
 - Business login, registration, email verification, password reset, GST and billing profile.
 - Customer order history within the same storefront, QC report and payment actions.

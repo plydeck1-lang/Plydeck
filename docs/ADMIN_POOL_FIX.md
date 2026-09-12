@@ -35,7 +35,7 @@ If you have independently modified any of these files since the supplied build, 
 1. Log in with your admin account and open **Manage → Pools → Edit pool**.
 2. Choose a future **Booking closes (IST)** date.
 3. Under **Product specification**, replace **Factory specification pending** with the actual supplier-confirmed **Bond / glue grade** and **Thickness tolerance**. Review **Full specification / supplier commitment** and enter the agreed batch details. Do not substitute an unverified grade or tolerance merely to pass validation.
-4. Review the locked four-item quantities, enter all four ex-factory purchase rates and verify operations allocations, tick the acknowledgement and save.
+4. Review the locked four-item quantities, enter all four rate-per-sft values and verify operations allocations, tick the acknowledgement and save.
 5. Click **Publish pool**. A visible category and sufficient shipment capacity are still required.
 
 Drafts can be saved while supplier specifications are pending; publication remains blocked until the pending fields are completed. Admin permissions are unchanged.

@@ -37,6 +37,7 @@ Copy these values into `.env.local`, using your project's values. The `.env.exam
 | `RAZORPAY_KEY_SECRET` | Matching Razorpay secret; SERVER ONLY |
 | `RAZORPAY_WEBHOOK_SECRET` | A separate secret you choose for the webhook |
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` locally; deployed HTTPS origin on Vercel |
+| `NEXT_PUBLIC_SITE_URL` | Public production origin used for metadata and sitemap, for example `https://plydeck.vercel.app` |
 | `CRON_SECRET` | Long random string for scheduled reconciliation and WhatsApp worker authorization |
 | `WHATSAPP_ENABLED` | Keep `false` until Meta templates and webhook are verified |
 | `WHATSAPP_GRAPH_VERSION` | Meta Graph API version, for example `v24.0` |
@@ -64,7 +65,7 @@ on conflict (user_id) do nothing;
 
 Refresh PLYDECK after logging in. **Manage** appears in the same top navigation. Other customers do not see it, and all admin API routes also enforce the role server-side.
 
-The seed creates three category records and two five-slot OEM pools attached to the same 32,000 kg shipment. The pools are drafts. In Manage → Pools → Edit pool, confirm the four MR/BWP ex-factory rate-card values and actual batch specs, set a future booking close time, save, then publish.
+The seed creates three category records and two five-slot OEM pools attached to the same 32,000 kg shipment. The pools are drafts. In Manage → Pools → Edit pool, confirm the four MR/BWP rate-per-sft values and actual batch specs, set a future booking close time, save, then publish.
 
 ## 5. Push the source to your Git repository
 

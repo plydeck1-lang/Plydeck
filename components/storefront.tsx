@@ -35,6 +35,11 @@ import { api, browserDb, DEMO } from "@/lib/supabase";
 import { Dialog } from "./dialog";
 import { Terms } from "./terms";
 import { AdminPanel } from "./admin-panel";
+import {
+  MarketingSections,
+  MaterialCategoryShowcase,
+} from "./marketing-sections";
+import { SiteFooter } from "./site-footer";
 
 declare global {
   interface Window {
@@ -352,7 +357,7 @@ export default function Storefront() {
           email: profile.email,
           contact: profile.phone,
         },
-        theme: { color: "#163d32" },
+        theme: { color: "#0d373f" },
         handler: async (result: {
           razorpay_payment_id: string;
           razorpay_order_id: string;
@@ -604,6 +609,13 @@ export default function Storefront() {
     (p) => p.status === "live" && Date.parse(p.closes_at) > now,
   );
   const selectedPool = data.pools.find((p) => p.id === selected);
+  function goToHomeSection(id: string) {
+    setView("pools");
+    window.setTimeout(
+      () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }),
+      0,
+    );
+  }
   return (
     <>
       {DEMO && (
@@ -621,6 +633,11 @@ export default function Storefront() {
           </button>
         </div>
       )}
+      <div className="brand-announcement">
+        <span>BUY BETTER. GROW BETTER.</span>
+        <b>Bengaluru OEM plywood pools now open</b>
+        <button type="button" onClick={() => goToHomeSection("live-pools")}>View live pools <ArrowRight size={13} /></button>
+      </div>
       <header className="header">
         <button
           className="brand"
@@ -641,16 +658,18 @@ export default function Storefront() {
         <nav aria-label="Main navigation">
           <button
             className={view === "pools" ? "active" : ""}
-            onClick={() => setView("pools")}
+            onClick={() => goToHomeSection("live-pools")}
           >
             Live pools
           </button>
+          <button onClick={() => goToHomeSection("why-plydeck")}>Why PLYDECK</button>
           <button
             className={view === "categories" ? "active" : ""}
             onClick={() => setView("categories")}
           >
             Plywood
           </button>
+          <button onClick={() => goToHomeSection("faq")}>FAQs</button>
           <button
             className={view === "orders" ? "active" : ""}
             onClick={() => (user ? setView("orders") : setAuth(true))}
@@ -704,28 +723,36 @@ export default function Storefront() {
             <section className="hero">
               <div className="hero-copy">
                 <div className="eyebrow">
-                  <span className="short-rule" /> THE COLLECTIVE BUYING
-                  ADVANTAGE
+                  <span className="short-rule" /> B2B PLYWOOD, AGGREGATED BY
+                  CITY
                 </div>
                 <h1>
-                  Better plywood.
+                  Factory-scale plywood rates.
                   <br />
-                  <span>Bought together.</span>
+                  <span>One slot at a time.</span>
                 </h1>
                 <p>
-                  Factory sourcing. Shared logistics. Every cost in view.
-                  <br className="desktop-only" /> Join a plywood pool built for
-                  your city.
+                  PLYDECK combines verified business demand into shared
+                  truckloads—giving contractors and retailers a clearer route
+                  from factory supply to city fulfilment.
                 </p>
-                <a href="#live-pools" className="button lime">
-                  Explore {city || "city"} pools <ArrowRight size={18} />
-                </a>
+                <div className="hero-actions">
+                  <a href="#live-pools" className="button copper">
+                    Explore {city || "city"} pools <ArrowRight size={18} />
+                  </a>
+                  <button className="button ghost" type="button" onClick={() => goToHomeSection("how-it-works")}>
+                    How pooling works
+                  </button>
+                </div>
                 <div className="hero-proof">
                   <span>
                     <ShieldCheck size={16} /> QC before dispatch
                   </span>
                   <span>
                     <Layers3 size={16} /> Reserve with 10%
+                  </span>
+                  <span>
+                    <Truck size={16} /> Shared truckload
                   </span>
                 </div>
               </div>
@@ -735,9 +762,11 @@ export default function Storefront() {
                   alt="Layered plywood sheets stacked in a studio; representative product image"
                 />
                 <div className="image-tag">
-                  <span>MATERIALS THAT BUILD MORE.</span>
-                  <small>Factory to your city, together.</small>
+                  <span>ONE LOAD. MULTIPLE BUYERS.</span>
+                  <small>Factory to Bengaluru, together.</small>
                 </div>
+                <div className="hero-stat hero-stat-top"><strong>100</strong><span>fixed sheets<br />per OEM slot</span></div>
+                <div className="hero-stat hero-stat-bottom"><strong>10%</strong><span>to reserve<br />an open slot</span></div>
                 <span className="image-caption">Representative imagery</span>
               </div>
             </section>
@@ -767,6 +796,9 @@ export default function Storefront() {
                 </p>
               </div>
             </div>
+            <MaterialCategoryShowcase
+              onBrowsePlywood={() => setView("categories")}
+            />
             <section className="pool-section" id="live-pools">
               <div className="section-heading">
                 <div>
@@ -884,6 +916,11 @@ export default function Storefront() {
                 How payments & refunds work <ArrowUpRight size={18} />
               </button>
             </section>
+            <MarketingSections
+              city={city}
+              onBrowse={() => goToHomeSection("live-pools")}
+              onLogin={() => setAuth(true)}
+            />
           </>
         )}
         {view === "categories" && (
@@ -1128,19 +1165,7 @@ export default function Storefront() {
           />
         )}
       </main>
-      <footer>
-        <div className="footer-brand">
-          <img src="/plydeck-logo.png" alt="Plydeсk" className="footer-logo" />
-        </div>
-        <p>Plywood, purchased together.</p>
-        <div>
-          <button onClick={() => setTerms(true)}>Terms & refunds</button>
-          <button onClick={() => setProfileDialog(true)}>
-            Business details
-          </button>
-          <span>© {new Date().getFullYear()} PLYDECK</span>
-        </div>
-      </footer>
+      <SiteFooter />
       {cityDialog && (
         <Dialog
           title="Where are you building?"
