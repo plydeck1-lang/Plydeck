@@ -1049,7 +1049,7 @@ export default function Storefront() {
                     )}
                     <details className="breakdown">
                       <summary>View fixed contents, price &amp; GST</summary>
-                      <FixedSlotContents />
+                      <FixedSlotContents pool={pool} />
                       <CustomerPriceSummary pool={pool} quote={order.quote} />
                     </details>
                     <div className="order-actions">
@@ -1323,7 +1323,7 @@ function PoolCard({
     </article>
   );
 }
-function FixedSlotContents() {
+function FixedSlotContents({ pool }: { pool: Pool }) {
   return (
     <div className="fixed-slot-grid">
       {FIXED_SLOT_ITEMS.map((item) => (
@@ -1333,6 +1333,10 @@ function FixedSlotContents() {
             {item.thickness}mm · {item.size}
           </strong>
           <b>{item.quantity} sheets</b>
+          <small className="fixed-slot-rate">
+            Ex-factory rate · {rupees(pool.config.rate_card[item.rateKey])}
+            /sqft
+          </small>
         </div>
       ))}
     </div>
@@ -1505,7 +1509,7 @@ function SlotDialog({
               The grade, thickness, size and quantity are locked for every
               buyer.
             </p>
-            <FixedSlotContents />
+            <FixedSlotContents pool={pool} />
             <p className="tiny muted">
               100 sheets per slot · 3,200 sqft · fixed composition locked at
               booking.
