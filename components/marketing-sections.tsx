@@ -13,6 +13,7 @@ import {
   Factory,
   Handshake,
   Layers3,
+  MapPinned,
   PackageCheck,
   ShieldCheck,
   Sparkles,
@@ -96,6 +97,33 @@ const faqs = [
   },
 ];
 
+const factoryLocations = [
+  {
+    name: "Kerala",
+    title: "Kerala plywood manufacturing cluster",
+    copy: "OEM plywood sourcing, batch planning and quality coordination from established manufacturing belts in Kerala.",
+    focus: "Plywood · Core panels · OEM production",
+  },
+  {
+    name: "Mangalore",
+    title: "Mangalore coastal supply cluster",
+    copy: "A strategic coastal Karnataka sourcing point for southern-market plywood and panel movement.",
+    focus: "Plywood · Panels · South India routes",
+  },
+  {
+    name: "Tamil Nadu",
+    title: "Tamil Nadu manufacturing network",
+    copy: "A developing supplier network for plywood, engineered boards and future category-specific pools.",
+    focus: "Plywood · Engineered boards · Future pools",
+  },
+  {
+    name: "More clusters",
+    title: "Supplier network expansion",
+    copy: "Additional factory clusters are added only after product, capacity, commercial and fulfilment checks.",
+    focus: "Supplier audit · Demand validation · Route fit",
+  },
+];
+
 export function MaterialCategoryShowcase({
   onBrowsePlywood,
 }: {
@@ -143,8 +171,10 @@ export function MarketingSections({
   onLogin: () => void;
 }) {
   const [audience, setAudience] = useState(0);
+  const [factoryLocation, setFactoryLocation] = useState(0);
   const slide = audiences[audience];
   const SlideIcon = slide.icon;
+  const location = factoryLocations[factoryLocation];
 
   return (
     <>
@@ -232,6 +262,46 @@ export function MarketingSections({
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="factory-network" id="factory-network">
+        <div className="marketing-heading">
+          <div>
+            <span className="brand-kicker">FACTORY SOURCING NETWORK</span>
+            <h2>Production clusters across South India.</h2>
+          </div>
+          <p>
+            PLYDECK aggregates demand in the markets we serve and coordinates
+            supply from the most suitable audited manufacturing cluster.
+          </p>
+        </div>
+        <div className="factory-location-tabs" role="tablist" aria-label="Factory sourcing locations">
+          {factoryLocations.map((item, index) => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={index === factoryLocation}
+              className={index === factoryLocation ? "active" : ""}
+              onClick={() => setFactoryLocation(index)}
+              key={item.name}
+            >{item.name}</button>
+          ))}
+        </div>
+        <div className="factory-location-card" aria-live="polite">
+          <div className="factory-location-map"><MapPinned size={38} /><span>OEM<br />SOURCE</span></div>
+          <div>
+            <span className="brand-kicker">{location.name.toUpperCase()}</span>
+            <h3>{location.title}</h3>
+            <p>{location.copy}</p>
+            <small>{location.focus}</small>
+          </div>
+          <div className="served-markets">
+            <span>CURRENTLY SERVING</span>
+            <strong>Bangalore</strong>
+            <strong>Hyderabad</strong>
+          </div>
+        </div>
+        <p className="factory-disclaimer">Factory sourcing locations are supply clusters, not retail outlets. Pool availability depends on product specification, supplier approval, payload and verified buyer demand.</p>
       </section>
 
       <section className="process-section" id="how-it-works">

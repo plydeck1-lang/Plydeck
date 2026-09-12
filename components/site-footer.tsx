@@ -6,17 +6,20 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-grid">
         <div className="site-footer-brand">
-          <img src="/plydeck-logo.png" alt="PLYDECK" />
+          <div className="footer-logo-frame">
+            <img src="/plydeck-logo-transparent.png" alt="PLYDECK — Buy better. Grow better." />
+          </div>
           <p>
             A city-based B2B demand aggregation platform for plywood and
             interior materials.
           </p>
-          <span><MapPin size={15} /> Bengaluru, Karnataka · India</span>
+          <span><MapPin size={15} /> Currently serving Bangalore &amp; Hyderabad</span>
         </div>
         <div>
           <h3>Platform</h3>
           <Link href="/#live-pools">Live pools</Link>
           <Link href="/#materials">Material categories</Link>
+          <Link href="/#factory-network">Factory network</Link>
           <Link href="/#how-it-works">How it works</Link>
           <Link href="/#faq">FAQs</Link>
         </div>

@@ -49,7 +49,7 @@ declare global {
     };
   }
 }
-const cities = ["Bengaluru", "Hyderabad", "Chennai", "Kochi", "Mumbai", "Pune"];
+const cities = ["Bengaluru", "Hyderabad"];
 const emptyProfile: Profile = {
   business_name: "",
   contact_name: "",
@@ -71,6 +71,7 @@ const statusLabel = (status: string) =>
     cancelled: "Cancelled",
     draft: "Draft",
   })[status] ?? status.replaceAll("_", " ");
+const displayCity = (value: string) => value === "Bengaluru" ? "Bangalore" : value;
 function migrateDemoData(value: StoreData): StoreData {
   const fallback = demoSeed().pools[0].config;
   return {
@@ -635,7 +636,7 @@ export default function Storefront() {
       )}
       <div className="brand-announcement">
         <span>BUY BETTER. GROW BETTER.</span>
-        <b>Bengaluru OEM plywood pools now open</b>
+        <b>Currently serving Bangalore &amp; Hyderabad</b>
         <button type="button" onClick={() => goToHomeSection("live-pools")}>View live pools <ArrowRight size={13} /></button>
       </div>
       <header className="header">
@@ -644,15 +645,13 @@ export default function Storefront() {
           onClick={() => setView("pools")}
           aria-label="PLYDECK home"
         >
-          <img
-            src="/plydeck-logo-nav.png"
-            alt="Plydeсk"
-            className="brand-logo"
-          />
+          <span className="brand-logo-frame">
+            <img src="/plydeck-logo-transparent.png" alt="PLYDECK — Buy better. Grow better." className="brand-logo" />
+          </span>
         </button>
         <button className="city-button" onClick={() => setCityDialog(true)}>
           <MapPin size={17} />
-          <span>{city || "Choose your city"}</span>
+          <span>{city ? displayCity(city) : "Choose your city"}</span>
           <ChevronDown size={14} />
         </button>
         <nav aria-label="Main navigation">
@@ -738,7 +737,7 @@ export default function Storefront() {
                 </p>
                 <div className="hero-actions">
                   <a href="#live-pools" className="button copper">
-                    Explore {city || "city"} pools <ArrowRight size={18} />
+                    Explore {city ? displayCity(city) : "city"} pools <ArrowRight size={18} />
                   </a>
                   <button className="button ghost" type="button" onClick={() => goToHomeSection("how-it-works")}>
                     How pooling works
@@ -758,12 +757,12 @@ export default function Storefront() {
               </div>
               <div className="hero-image">
                 <img
-                  src="/plywood-studio.png"
-                  alt="Layered plywood sheets stacked in a studio; representative product image"
+                  src="/plywood-factory-stock.png"
+                  alt="Finished plywood stock stacked for dispatch inside an OEM production factory"
                 />
                 <div className="image-tag">
-                  <span>ONE LOAD. MULTIPLE BUYERS.</span>
-                  <small>Factory to Bengaluru, together.</small>
+                  <span>FACTORY STOCK. SHARED DEMAND.</span>
+                  <small>Currently serving Bangalore &amp; Hyderabad.</small>
                 </div>
                 <div className="hero-stat hero-stat-top"><strong>100</strong><span>fixed sheets<br />per OEM slot</span></div>
                 <div className="hero-stat hero-stat-bottom"><strong>10%</strong><span>to reserve<br />an open slot</span></div>
@@ -804,7 +803,7 @@ export default function Storefront() {
                 <div>
                   <div className="eyebrow">BUY BETTER, TOGETHER</div>
                   <h2>
-                    Live pools in <span>{city || "your city"}</span>
+                    Live pools in <span>{city ? displayCity(city) : "your city"}</span>
                   </h2>
                   <p>
                     One shared shipment. Individual orders. A fixed, transparent
@@ -858,7 +857,7 @@ export default function Storefront() {
               ) : live.length === 0 ? (
                 <div className="empty-state">
                   <Package size={38} />
-                  <h3>No open pools {city ? `in ${city}` : "yet"}</h3>
+                  <h3>No open pools {city ? `in ${displayCity(city)}` : "yet"}</h3>
                   <p>Choose another city or return when a new pool opens.</p>
                   <button
                     className="button dark"
@@ -917,7 +916,7 @@ export default function Storefront() {
               </button>
             </section>
             <MarketingSections
-              city={city}
+              city={city ? displayCity(city) : city}
               onBrowse={() => goToHomeSection("live-pools")}
               onLogin={() => setAuth(true)}
             />
@@ -1182,7 +1181,7 @@ export default function Storefront() {
                 onClick={() => chooseCity(c)}
               >
                 <MapPin size={22} />
-                <strong>{c}</strong>
+                <strong>{displayCity(c)}</strong>
                 <span>
                   {c === "Bengaluru"
                     ? "OEM pools available"
@@ -1287,7 +1286,7 @@ function PoolCard({
         <div className="pool-meta">
           <span>
             <MapPin size={14} />
-            {pool.city}
+            {displayCity(pool.city)}
           </span>
           <span>
             <Clock3 size={14} />
@@ -1473,7 +1472,7 @@ function SlotDialog({
       <div className="configure-grid">
         <div className="configure-main">
           <span className="eyebrow">
-            {pool.city.toUpperCase()} · FIXED OEM SLOT
+            {displayCity(pool.city).toUpperCase()} · FIXED OEM SLOT
           </span>
           <h2>{pool.name}</h2>
           {replacement && (

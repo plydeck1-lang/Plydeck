@@ -19,7 +19,9 @@ export function PolicyShell({
     <>
       <header className="policy-header">
         <Link href="/" aria-label="Return to PLYDECK home">
-          <img src="/plydeck-logo-nav.png" alt="PLYDECK" />
+          <span className="policy-logo-frame">
+            <img src="/plydeck-logo-transparent.png" alt="PLYDECK — Buy better. Grow better." />
+          </span>
         </Link>
         <Link href="/" className="policy-back"><ArrowLeft size={16} /> Back to pools</Link>
       </header>
