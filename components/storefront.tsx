@@ -796,7 +796,16 @@ export default function Storefront() {
               </div>
             </div>
             <MaterialCategoryShowcase
-              onBrowsePlywood={() => setView("categories")}
+              onBrowsePlywood={(categoryName) => {
+                const matchingCategory = data.categories.find(
+                  (item) =>
+                    item.active &&
+                    item.name.trim().toLowerCase() ===
+                      categoryName.trim().toLowerCase(),
+                );
+                setCategory(matchingCategory?.id ?? "all");
+                goToHomeSection("live-pools");
+              }}
             />
             <section className="pool-section" id="live-pools">
               <div className="section-heading">
@@ -872,6 +881,10 @@ export default function Storefront() {
                     <PoolCard
                       key={pool.id}
                       pool={pool}
+                      categoryName={
+                        data.categories.find((item) => item.id === pool.category_id)
+                          ?.name ?? "Plywood"
+                      }
                       onSelect={() => setSelected(pool.id)}
                       onWaitlist={() => waitlist(pool)}
                       now={now}
@@ -1256,11 +1269,13 @@ export default function Storefront() {
 
 function PoolCard({
   pool,
+  categoryName,
   onSelect,
   onWaitlist,
   now,
 }: {
   pool: Pool;
+  categoryName: string;
   onSelect: () => void;
   onWaitlist: () => void;
   now: number;
@@ -1274,15 +1289,11 @@ function PoolCard({
   );
   return (
     <article className="pool-card">
-      <div className="pool-card-image">
-        <img
-          src={pool.image_url || "/plywood-studio.png"}
-          alt="Representative layered OEM plywood sheets"
-        />
-        <span className="badge image-badge">FIXED OEM SLOT</span>
-        <span className="pool-image-code">{pool.code}</span>
-      </div>
       <div className="pool-card-body">
+        <div className="pool-card-topline">
+          <span className="badge pool-category-badge">{categoryName}</span>
+          <span className="pool-code">{pool.code}</span>
+        </div>
         <div className="pool-meta">
           <span>
             <MapPin size={14} />

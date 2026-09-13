@@ -126,9 +126,17 @@ select:focus-visible, summary:focus-visible { outline-color: var(--primary); }
 .material-tile>svg { margin-top: auto; color: var(--primary-dark); }
 
 .pool-section { margin-bottom: 36px; scroll-margin-top: 105px; }
-.pool-card { border-radius: 18px; border-color: rgba(13,55,63,.12); box-shadow: 0 16px 44px rgba(13,55,63,.06); }
-.pool-card-image { min-height: 455px; }
-.image-badge { background: rgba(248,246,242,.92); color: var(--forest); border-radius: 999px; }
+.pool-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.pool-card { display: flex; flex-direction: column; min-width: 0; border-radius: 18px; border-color: rgba(13,55,63,.12); box-shadow: 0 16px 44px rgba(13,55,63,.06); }
+.pool-card-body { display: flex; flex: 1; flex-direction: column; padding: 26px; }
+.pool-card-topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.pool-category-badge { max-width: 72%; border-radius: 999px; background: var(--primary-soft); color: var(--primary-dark); line-height: 1.35; }
+.pool-code { flex: 0 0 auto; padding-top: 5px; color: #77878a; font-size: 10px; font-weight: 750; letter-spacing: .08em; }
+.pool-card .pool-meta { margin-bottom: 18px; }
+.pool-card h3 { font-size: 23px; line-height: 1.25; }
+.pool-card .pool-spec { min-height: 42px; line-height: 1.6; }
+.pool-card .pool-price { margin-top: 6px; }
+.pool-card .slot-availability { margin-top: auto; }
 .pool-price strong, .fixed-slot-item b { color: var(--forest); }
 .slot-track span.filled { background: var(--primary); }
 .booking-caption strong { color: var(--primary-dark); }
@@ -286,6 +294,7 @@ th { background: var(--secondary-soft); color: var(--forest); }
   .hero { gap: 28px; }
   .hero h1 { font-size: 55px; }
   .hero-image { min-height: 470px; }
+  .pool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .moat-section { grid-template-columns: 1fr; gap: 45px; }
   .audience-copy, .audience-points { padding: 44px; }
   .site-footer-grid { gap: 40px; }
@@ -314,7 +323,6 @@ th { background: var(--secondary-soft); color: var(--forest); }
   .material-showcase, .audience-section, .factory-network, .process-section, .faq-section { margin-bottom: 70px; }
   .material-rail { grid-template-columns: repeat(2, 1fr); }
   .material-tile { min-height: 205px; }
-  .pool-card-image { height: 190px; min-height: 190px; }
   .moat-section { padding: 66px 20px; margin-bottom: 70px; }
   .moat-grid article { min-height: 205px; padding: 22px; }
   .audience-card { grid-template-columns: 1fr; }
@@ -391,5 +399,7 @@ th { background: var(--secondary-soft); color: var(--forest); }
   .cost-lines>div { gap: 10px; }
   .cost-lines strong { min-width: 102px; font-size: 13px; }
   .cost-total strong { font-size: 19px; }
-  .pool-card-image { height: 205px; min-height: 205px; }
+  .pool-grid { grid-template-columns: 1fr; }
+  .pool-card-body { padding: 22px; }
+  .pool-card .pool-spec { min-height: 0; }
 }

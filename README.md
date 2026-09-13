@@ -32,7 +32,7 @@ To reset the demo, clear the browser's `plydeck-demo-v1` local-storage entry. Ci
 - Per-order staged payments: 10% booking, 40% confirmation, 50% after QC and before dispatch. Percentages apply to the buyer's order total including GST, not the whole pool.
 - Business login, registration, email verification, password reset, GST and billing profile.
 - Customer order history within the same storefront, QC report and payment actions.
-- In-app admin for category visibility and images, pool configuration and publication, shared shipment capacity, orders, QC, refunds, default notices and FIFO waiting-list offers.
+- In-app admin for category visibility, simplified pool price/specification setup and publication, internal shipment capacity, orders, QC, refunds, default notices and FIFO waiting-list offers. Public pool listings are image-free responsive cards; drafts stay private until **Publish pool** is used.
 - Supabase row-level security; server-only privileged RPCs; atomic slot allocation and shared payload checks; immutable quotes after reservation.
 - Razorpay server order creation, checkout signature checks, captured-payment verification, signed webhook handling, payment reconciliation and idempotent refunds.
 - Consent-based WhatsApp Cloud API outbox, approved-template worker, signed webhook delivery updates, inbound message log and in-app admin WhatsApp log.

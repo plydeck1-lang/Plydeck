@@ -19,12 +19,10 @@ import type {
   Category,
   PoolConfig,
   Shipment,
-  Costs,
   RateCard,
 } from "@/lib/types";
 import { initialConfig } from "@/lib/seed";
 import {
-  COST_LABELS,
   FIXED_SLOT_ITEMS,
   money,
   quoteSlot,
@@ -82,7 +80,11 @@ export function AdminPanel({
       setPool(null);
       setCategory(null);
       setShipment(null);
-      onNotice("Changes saved.");
+      onNotice(
+        entity === "pools" && (record as Pool).status === "draft"
+          ? "Pool saved as draft. Use Publish pool to show it to customers."
+          : "Changes saved.",
+      );
     } catch (e) {
       onError(e);
     } finally {
@@ -307,7 +309,7 @@ export function AdminPanel({
       data.categories.find((c) => c.slug === "oem-plywood")?.id ??
       data.categories[0]?.id ??
       "",
-    shipment_id: "",
+    shipment_id: data.shipments[0]?.id ?? "",
     city: "Bengaluru",
     image_url: "/plywood-studio.png",
     status: "draft",
@@ -495,9 +497,9 @@ export function AdminPanel({
         <>
           <p className="info-box">
             <InfoIcon />
-            Attach pools to the same shipment to share its payload. Enter each
-            pool’s share of freight and operating costs in the pool editor. All
-            unused slots reserve the fixed slot’s weight.
+            Delivery batches are used internally for payload checks. New pools
+            are linked to the current batch automatically; the customer-facing
+            pool price and specification are managed from the pool editor.
           </p>
           <button
             className="button outline"
@@ -1111,21 +1113,6 @@ function PoolEditor({
               </select>
             </label>
             <label>
-              Shared shipment
-              <select
-                required
-                value={d.shipment_id}
-                onChange={(e) => setD({ ...d, shipment_id: e.target.value })}
-              >
-                <option value="">Choose a shipment</option>
-                {data.shipments.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
               Number of slots
               <input
                 type="number"
@@ -1149,19 +1136,12 @@ function PoolEditor({
               <small className="muted">India Standard Time (UTC+05:30)</small>
             </label>
           </div>
-          {!data.pools.some((p) => p.id === d.id) && (
-            <p className="info-box">
-              Choose the truckload for this pool. For a separate load, first
-              create a shipment in Manage → Shipments. Linked pools must fit
-              within the same truck’s payload.
-            </p>
-          )}
-          <ImageField
-            value={d.image_url}
-            onChange={(image_url) => setD({ ...d, image_url })}
-            onError={onError}
-          />
-          <h3>Fixed slot contents &amp; default rate card</h3>
+          <p className="info-box">
+            Saving creates a draft. After reviewing the product and price,
+            click <strong>Publish pool</strong> on the Pools tab. The pool will
+            then appear automatically in its selected category and city.
+          </p>
+          <h3>Fixed slot contents &amp; selling rate card</h3>
           <p className="muted">
             Every slot contains these 100 sheets. Grade, thickness, size and
             quantity are locked; set only the current rate per sft for each
@@ -1178,31 +1158,6 @@ function PoolEditor({
               GST
               <input value="18%" disabled />
             </label>
-          </div>
-          <h3>Operations allocation for this pool (₹)</h3>
-          <p className="muted">
-            Enter this pool’s share of a merged shipment. Each line is divided
-            equally by the published slot count and locked at reservation.
-          </p>
-          <div className="form-grid">
-            {(Object.keys(COST_LABELS) as (keyof Costs)[]).map((k) => (
-              <label key={k}>
-                {COST_LABELS[k]}
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  required
-                  value={d.config.costs[k]}
-                  onChange={(e) =>
-                    config("costs", {
-                      ...d.config.costs,
-                      [k]: Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-            ))}
           </div>
           <h3>Product specification</h3>
           {pendingSpecifications(d.config).length > 0 && (
@@ -1246,8 +1201,8 @@ function PoolEditor({
               onChange={(e) => setAck(e.target.checked)}
             />
             {d.status === "draft"
-              ? "I have reviewed this fixed slot, its four-item rate card and shipment allocation. Factory specifications must be completed before publishing."
-              : "I have checked all four purchase rates, operations allocations, truck payload and product specification."}
+              ? "I have reviewed the category, fixed slot, four-item rate card and product specification. Supplier-confirmed specifications must be completed before publishing."
+              : "I have checked all four rates and the complete product specification."}
           </label>
         </fieldset>
         <button className="button dark" disabled={busy || locked}>

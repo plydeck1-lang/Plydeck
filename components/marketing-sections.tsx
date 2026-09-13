@@ -126,7 +126,7 @@ const factoryLocations = [
 export function MaterialCategoryShowcase({
   onBrowsePlywood,
 }: {
-  onBrowsePlywood: () => void;
+  onBrowsePlywood: (categoryName: string) => void;
 }) {
   return (
     <section className="material-showcase" id="materials">
@@ -146,7 +146,7 @@ export function MaterialCategoryShowcase({
             type="button"
             className={`material-tile ${live ? "is-live" : ""}`}
             key={name}
-            onClick={live ? onBrowsePlywood : undefined}
+            onClick={live ? () => onBrowsePlywood(name) : undefined}
             aria-disabled={!live}
           >
             <span className="material-icon"><Icon size={24} /></span>
