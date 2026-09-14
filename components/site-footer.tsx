@@ -33,7 +33,7 @@ export function SiteFooter() {
         <div>
           <h3>Policies</h3>
           <Link href="/terms">Terms &amp; conditions</Link>
-          <Link href="/refund-policy">Refund policy</Link>
+          <Link href="/refund-policy">Cancellation policy</Link>
           <Link href="/privacy-policy">Privacy policy</Link>
           <Link href="/shipping-policy">Shipping &amp; delivery</Link>
         </div>

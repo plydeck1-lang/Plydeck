@@ -1,6 +1,6 @@
 # PLYDECK — complete build and Supabase setup
 
-This source archive contains the whole Next.js webapp, not an update-only patch. It includes all SQL, the public storefront, pool/slot configuration, business login, GST pricing, 10/40/50 Razorpay payments, admin controls and WhatsApp integration code.
+This source archive contains the whole Next.js webapp, not an update-only patch. It includes all SQL, the public storefront, pool/slot configuration, business login, GST pricing, direct slot reservations, admin controls and WhatsApp integration code.
 
 Important: extract the archive directly into the folder whose `package.json` belongs to PLYDECK. Do not leave the extracted source as a child folder inside an older PLYDECK project. A nested copy causes the parent TypeScript configuration to compile new components against old root types.
 
@@ -21,10 +21,9 @@ Open http://localhost:3000. Select Bengaluru. Use sample business details in dem
 Open `supabase/README_SQL.md` and choose the matching path:
 
 - New project: run `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` once.
-- Phase 1 already installed: run migrations 003, 004, 005, 006, then 007.
-- Phase 2 already installed: run migrations 004, 005, 006, then 007 in order.
-- Migration 005 already installed: run migrations 006 and 007.
-- Migration 006 already installed: run only migration 007.
+- Phase 1 already installed: run migrations 003, 004, 005, 006, 007, then 008.
+- Phase 2 already installed: run migrations 004, 005, 006, 007, then 008 in order.
+- Migration 007 already installed: run only migration 008.
 
 Keep PLYDECK in its own Supabase project. Set the project's public URL, anon key and server service-role key in `.env.local`. Enable Email Auth and configure redirects. Change `NEXT_PUBLIC_DEMO_MODE=false` for connected mode. Restart the app after environment changes.
 
@@ -34,7 +33,7 @@ Register in PLYDECK and confirm the email. In Supabase > Authentication > Users,
 
 ## 4. Connect services
 
-Use `docs/DEPLOYMENT.md` for Supabase, Razorpay, Git and Vercel setup. Use `docs/WHATSAPP_SETUP.md` for Meta credentials, approved templates, callbacks and the cron worker. Enter secrets only in your local environment file or Vercel Environment Variables. No real credentials are included.
+Use `docs/DEPLOYMENT.md` for Supabase, Git and Vercel setup. Use `docs/WHATSAPP_SETUP.md` for Meta credentials, approved templates, callbacks and the cron worker. Enter secrets only in your local environment file or Vercel Environment Variables. No real credentials are included.
 
 WhatsApp is disabled by default. It requires an enabled worker schedule on a Vercel plan that supports the chosen cron frequency (or an external scheduler calling the secured endpoint). Set the callback to `https://YOUR_DOMAIN/api/whatsapp/webhook`.
 
@@ -60,4 +59,4 @@ git push -u origin main
 
 For an existing repository, copy the source files into it while preserving your Git history and environment file, then commit and push normally.
 
-The app is responsive for desktop and mobile browsers. Native Android/iOS app binaries are not included. Test hosted Auth, checkout, refunds and WhatsApp delivery with your accounts before accepting commercial bookings.
+The app is responsive for desktop and mobile browsers. Native Android/iOS app binaries are not included. Test hosted Auth, direct slot reservation, admin transitions and WhatsApp delivery with your accounts before accepting commercial bookings.

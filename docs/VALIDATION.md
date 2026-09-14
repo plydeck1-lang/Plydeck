@@ -1,15 +1,14 @@
-# PLYDECK deployment verification — 11 September 2026
+# Validation notes
 
-TypeScript validation passed. The Next.js 16.3.4 production build passed, including the storefront, reset-password route and 14 API routes.
+The local suite covers deterministic fixed-slot pricing, four-item composition, 18% GST, direct atomic reservations, slot exclusivity, shared truck payload limits, admin-only transitions, QC/dispatch without payment gates, cancellation slot release and opt-in WhatsApp booking events. The combined Supabase installer is checked for migration 008 and its existing-schema guard.
 
-23 automated tests passed across the main suite. Database tests used isolated PostgreSQL-compatible PGlite with test Auth/Storage stubs.
+Run:
 
-Coverage includes the fixed four-item 100-sheet slot, independent admin rate-card pricing, GST/10-40-50 arithmetic, truck weight, exclusive slots, immutable quotes, captured-payment idempotency, late payments, cancellation/refund gates, admin privileges and fixed post-QC replacements.
+```powershell
+npm.cmd run test
+npm.cmd run build
+```
 
-WhatsApp checks cover exact QC outstanding balance and IST dates, no-consent suppression, withdrawn consent at claim, paid-reminder suppression, refund-stage event deduplication, atomic webhook replay, no regression after read, STOP opt-out, server-only RPC privileges, phone normalization and ordered template parameters with missing-value rejection.
+No hosted Supabase project, WhatsApp provider, browser session, Git push or Vercel deployment is changed by the local tests. Before commercial use, run the connected acceptance flow in `docs/DEPLOYMENT.md` and verify your reviewed seller terms, supplier specifications, rate card and GST setup.
 
-Deployment checks cover the combined SQL installer and its refusal to run on an existing schema, plus the first-admin placeholder guard and repeat-safe role assignment.
-
-No user's hosted Supabase database was changed. Hosted Auth/email, Storage upload, real Razorpay payments/refunds, Meta template approval/delivery, browser interaction, Git push and Vercel deployment were not performed. Complete the connected acceptance flow in DEPLOYMENT.md and WHATSAPP_SETUP.md before commercial use.
-
-Notification migration 004 corrects the earlier QC balance and template copy, adds send-time eligibility, separate refund events and atomic status handling. Migration 005 carries both legacy thickness totals into waiting-list replacements; migration 006 links the old selector to exactly 100 sheets; migration 007 removes buyer configuration and enforces the fixed MR/BWP slot with four rate-card lines. Meta templates must match WHATSAPP_TEMPLATES.md. Uncertain sends require review rather than automatic resend; retries are limited to explicit transient provider rejections.
+Migrations 001–007 remain as historical schema evolution. Migration 008 is the active overlay: payment tables are preserved for audit, their client execution is revoked, and booking/pool/cancellation functions use direct slot confirmation instead.

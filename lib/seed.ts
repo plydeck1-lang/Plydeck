@@ -99,7 +99,6 @@ export function demoSeed(): StoreData {
     profile: null,
     isAdmin: false,
     waitlist: [],
-    refunds: [],
     whatsappMessages: [],
     whatsapp: {
       enabled: false,

@@ -6,7 +6,6 @@ export type PoolStatus =
   | "qc_ready"
   | "dispatched"
   | "cancelled";
-export type Stage = "booking" | "confirmation" | "dispatch";
 export type Costs = {
   transport: number;
   unloading: number;
@@ -114,7 +113,6 @@ export type Quote = {
   gst: number;
   total: number;
   rate: number;
-  stages: Record<Stage, number>;
   terms_version: string;
 };
 export type Order = {
@@ -126,6 +124,7 @@ export type Order = {
   secondary_qty: number;
   status: string;
   quote: Quote;
+  /** Retained for compatibility with existing Supabase rows; direct bookings always store zero. */
   paid_amount: number;
   created_at: string;
   expires_at?: string;
@@ -175,13 +174,6 @@ export type StoreData = {
     offered_primary?: number;
     offered_secondary?: number;
     offer_expires_at?: string;
-  }[];
-  refunds?: {
-    id: string;
-    order_id: string;
-    amount: number;
-    status: string;
-    reason: string;
   }[];
   whatsappMessages?: WhatsAppMessage[];
   whatsapp?: { enabled: boolean; configured: boolean; reason?: string };

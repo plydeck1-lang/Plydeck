@@ -110,13 +110,13 @@ export function AdminPanel({
     if (action === "cancel") {
       note =
         window.prompt(
-          "Reason for pool cancellation (customers receive a full refund for undelivered orders):",
+          "Reason for pool cancellation (all affected reservations will be cancelled):",
         ) ?? "";
       if (!note) return;
     }
     if (
       !window.confirm(
-        `${action.toUpperCase()} ${p.code}? This changes customer order availability or payment milestones.`,
+        `${action.toUpperCase()} ${p.code}? This changes customer order availability and fulfilment status.`,
       )
     )
       return;
@@ -126,41 +126,16 @@ export function AdminPanel({
         const orders = (data.orders ?? []).filter(
           (o) =>
             o.pool_id === p.id &&
-            !["cancelled", "defaulted", "refunded", "refund_pending"].includes(
-              o.status,
-            ),
+            !["cancelled", "expired"].includes(o.status),
         );
         const filled = orders.reduce((n, o) => n + o.slot_numbers.length, 0);
         if (action === "publish" && p.config.specification.length < 20)
           throw new Error("Add the complete product specification.");
-        if (
-          action === "request_confirmation" &&
-          (filled !== p.total_slots ||
-            orders.some((o) => o.paid_amount < o.quote.stages.booking))
-        )
-          throw new Error("All slots must have a verified 10% booking.");
-        if (
-          action === "confirm" &&
-          orders.some(
-            (o) =>
-              o.paid_amount <
-              o.quote.stages.booking + o.quote.stages.confirmation,
-          )
-        )
-          throw new Error(
-            "All orders must have paid 50% before final confirmation.",
-          );
-        if (
-          action === "dispatch" &&
-          orders.some((o) => o.paid_amount !== o.quote.total)
-        )
-          throw new Error(
-            "Every active order must be fully paid before pool dispatch.",
-          );
+        if (action === "confirm" && filled !== p.total_slots)
+          throw new Error("All slots must be reserved before pool confirmation.");
         const status = (
           {
             publish: "live",
-            request_confirmation: "confirming",
             confirm: "confirmed",
             qc: "qc_ready",
             dispatch: "dispatched",
@@ -179,13 +154,6 @@ export function AdminPanel({
                 ).toISOString(),
               }
             : {}),
-          ...(action === "request_confirmation" || action === "qc"
-            ? {
-                payment_due_at: new Date(
-                  Date.now() + 48 * 3600000,
-                ).toISOString(),
-              }
-            : {}),
           ...(action === "qc" ? { qc_report: note } : {}),
         };
         onDemoChange({
@@ -194,26 +162,13 @@ export function AdminPanel({
           orders:
             action === "cancel"
               ? data.orders?.map((o) =>
-                  o.pool_id === p.id ? { ...o, status: "refund_pending" } : o,
+                  o.pool_id === p.id ? { ...o, status: "cancelled" } : o,
                 )
               : action === "dispatch"
                 ? data.orders?.map((o) =>
                     o.pool_id === p.id ? { ...o, status: "dispatched" } : o,
                   )
                 : data.orders,
-          refunds:
-            action === "cancel"
-              ? [
-                  ...(data.refunds ?? []),
-                  ...orders.map((o) => ({
-                    id: crypto.randomUUID(),
-                    order_id: o.id,
-                    amount: o.paid_amount,
-                    status: "review",
-                    reason: note,
-                  })),
-                ]
-              : data.refunds,
         });
       } else {
         await api("admin", {
@@ -229,37 +184,6 @@ export function AdminPanel({
       onError(e);
     } finally {
       setBusy(false);
-    }
-  }
-  async function orderAction(id: string, action: string) {
-    let note = "";
-    if (action === "default_notice") {
-      note =
-        window.prompt(
-          "Record written notice delivery reference and payment instructions. A further 48-hour cure period starts now.",
-        ) ?? "";
-      if (note.length < 10) return;
-    }
-    if (action === "default") {
-      note =
-        window.prompt(
-          "Record committed costs, resale recovery and the refund assessment. This sends the retention decision for review; it does not automatically retain 50%.",
-        ) ?? "";
-      if (note.length < 10) return;
-    }
-    if (!window.confirm("Apply this order action?")) return;
-    try {
-      if (DEMO) {
-        onNotice(
-          "This action is available after connecting Supabase. Demo payments never create real refund or default decisions.",
-        );
-        return;
-      }
-      await api("admin", { action, order_id: id, note });
-      await onRefresh();
-      onNotice("Order updated.");
-    } catch (e) {
-      onError(e);
     }
   }
   async function offerNext(poolId: string) {
@@ -339,7 +263,7 @@ export function AdminPanel({
           ["pools", "Pools", Layers3],
           ["categories", "Categories", Settings2],
           ["shipments", "Shipments", Truck],
-          ["orders", "Orders & refunds", ClipboardCheck],
+          ["orders", "Orders", ClipboardCheck],
           ["messages", "WhatsApp log", MessageCircle],
         ].map(([id, label, Icon]) => {
           const I = Icon as typeof Layers3;
@@ -408,9 +332,9 @@ export function AdminPanel({
                   <button
                     className="button dark small"
                     disabled={busy}
-                    onClick={() => transition(p, "request_confirmation")}
+                    onClick={() => transition(p, "confirm")}
                   >
-                    Request 40%
+                    Confirm full pool
                   </button>
                 )}
                 {p.status === "confirming" && (
@@ -549,9 +473,8 @@ export function AdminPanel({
                 <tr>
                   <th>Order / buyer</th>
                   <th>Pool / slots</th>
-                  <th>Total / paid</th>
+                  <th>Order value</th>
                   <th>Status</th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -573,23 +496,9 @@ export function AdminPanel({
                     </td>
                     <td>
                       {money(o.quote.total, 2)}
-                      <small>{money(o.paid_amount, 2)} paid</small>
+                      <small>Includes GST · no online payment</small>
                     </td>
                     <td>{o.status.replaceAll("_", " ")}</td>
-                    <td>
-                      <button
-                        className="text-button"
-                        onClick={() => orderAction(o.id, "default_notice")}
-                      >
-                        Record default notice
-                      </button>
-                      <button
-                        className="text-button danger"
-                        onClick={() => orderAction(o.id, "default")}
-                      >
-                        Review default & release slot
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -598,70 +507,6 @@ export function AdminPanel({
               <div className="empty-state">No orders yet.</div>
             )}
           </div>
-          <h2 className="subheading">Refund queue</h2>
-          {data.refunds?.length ? (
-            data.refunds.map((r) => (
-              <div className="admin-pool" key={r.id}>
-                <div>
-                  <strong>
-                    {r.order_id.slice(0, 8).toUpperCase()} ·{" "}
-                    {money(r.amount, 2)}
-                  </strong>
-                  <p>
-                    {r.reason} · {r.status}
-                  </p>
-                </div>
-                {["review", "processing"].includes(r.status) && (
-                  <button
-                    className="button outline small"
-                    onClick={async () => {
-                      const amount = window.prompt(
-                        "Refund amount in rupees. Enter the full approved refund. A recorded review is required for any deduction.",
-                        String(r.amount / 100),
-                      );
-                      if (amount === null) return;
-                      const note =
-                        window.prompt("Refund decision and basis:") ?? "";
-                      if (!note) return;
-                      try {
-                        if (DEMO) {
-                          onDemoChange({
-                            ...data,
-                            refunds: data.refunds?.map((v) =>
-                              v.id === r.id
-                                ? {
-                                    ...v,
-                                    status: "demo_refunded",
-                                    amount: Math.round(Number(amount) * 100),
-                                  }
-                                : v,
-                            ),
-                          });
-                        } else {
-                          await api("admin", {
-                            action: "refund",
-                            refund_id: r.id,
-                            amount: Math.round(Number(amount) * 100),
-                            note,
-                          });
-                          await onRefresh();
-                        }
-                        onNotice("Refund decision recorded.");
-                      } catch (e) {
-                        onError(e);
-                      }
-                    }}
-                  >
-                    {r.status === "processing"
-                      ? "Retry pending refund"
-                      : "Review & refund"}
-                  </button>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="muted">No pending refunds.</p>
-          )}
           <h2 className="subheading">Waiting lists</h2>
           {data.pools.map((p) => (
             <div className="admin-pool" key={p.id}>

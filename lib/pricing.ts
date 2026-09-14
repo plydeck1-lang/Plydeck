@@ -1,5 +1,5 @@
-import type { Pool, Quote, Stage, Costs, RateCard } from "./types";
-export const TERMS_VERSION = "2026-09-p1";
+import type { Pool, Quote, Costs, RateCard } from "./types";
+export const TERMS_VERSION = "2026-09-direct-1";
 export const FIXED_SLOT_ITEMS = [
   {
     rateKey: "mr_16",
@@ -96,8 +96,6 @@ export function quoteSlot(pool: Pool, slots = 1): Quote {
   }
   const gst = Math.round((subtotal * c.gst_percent) / 100),
     total = subtotal + gst;
-  const booking = Math.round(total * 0.1),
-    confirmation = Math.round(total * 0.4);
   return {
     primary_qty: FIXED_PRIMARY_QTY,
     secondary_qty: FIXED_SECONDARY_QTY,
@@ -113,29 +111,6 @@ export function quoteSlot(pool: Pool, slots = 1): Quote {
     gst,
     total,
     rate: subtotal / area / 100,
-    stages: { booking, confirmation, dispatch: total - booking - confirmation },
     terms_version: TERMS_VERSION,
   };
-}
-export function nextStage(
-  order: { paid_amount: number; quote: Quote; replacement?: boolean },
-  status: string,
-): Stage | null {
-  if (
-    order.paid_amount === 0 &&
-    (status === "live" || (order.replacement && status === "qc_ready"))
-  )
-    return "booking";
-  if (
-    order.paid_amount === order.quote.stages.booking &&
-    (status === "confirming" || (order.replacement && status === "qc_ready"))
-  )
-    return "confirmation";
-  if (
-    order.paid_amount ===
-      order.quote.stages.booking + order.quote.stages.confirmation &&
-    status === "qc_ready"
-  )
-    return "dispatch";
-  return null;
 }

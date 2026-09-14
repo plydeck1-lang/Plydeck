@@ -1,1 +1,1 @@
-{"crons":[{"path":"/api/payments/reconcile","schedule":"0 0 * * *"},{"path":"/api/notifications/whatsapp/worker","schedule":"*/5 * * * *"}]}
+{"crons":[{"path":"/api/notifications/whatsapp/worker","schedule":"*/5 * * * *"}]}

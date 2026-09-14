@@ -21,14 +21,14 @@ export default function AboutPage() {
           Interior businesses often need dependable material at competitive rates, but an individual project may not justify a full factory truckload. At the same time, OEM factories receive fragmented enquiries that are difficult to standardise, plan and fulfil efficiently.
         </p>
         <p>
-          PLYDECK creates a structured middle layer: publish a defined material slot, aggregate verified demand by city, align the order to transport capacity, collect payments in milestones and move the pool through supplier confirmation, quality check and dispatch.
+          PLYDECK creates a structured middle layer: publish a defined material slot, aggregate verified demand by city, align the order to transport capacity, directly lock reservations and move the pool through supplier confirmation, quality check and dispatch.
         </p>
       </section>
       <div className="about-principles">
-        <article><Building2 size={25} /><h3>Buyer clarity</h3><p>Fixed contents, visible rates, GST and payment milestones before booking.</p></article>
+        <article><Building2 size={25} /><h3>Buyer clarity</h3><p>Fixed contents, visible rates and GST before a direct slot confirmation.</p></article>
         <article><Factory size={25} /><h3>Factory-ready demand</h3><p>Consolidated quantities with a shared destination and defined specification.</p></article>
         <article><Layers3 size={25} /><h3>Standardised pools</h3><p>A repeatable buying unit that supports costing, payload and batch planning.</p></article>
-        <article><ShieldCheck size={25} /><h3>Controlled release</h3><p>QC-led final payment and documented order progress before dispatch.</p></article>
+        <article><ShieldCheck size={25} /><h3>Controlled release</h3><p>QC-led release and documented order progress before dispatch.</p></article>
       </div>
       <section>
         <h2>What PLYDECK is—and is not</h2>

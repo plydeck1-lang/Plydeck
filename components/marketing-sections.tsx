@@ -34,16 +34,16 @@ const audiences = [
   {
     kicker: "FOR INTERIOR CONTRACTORS & RETAILERS",
     title: "Buy closer to factory economics without carrying a full truck alone.",
-    copy: "Reserve a standard slot, see the material rate and GST before payment, and follow one order from booking to QC and dispatch.",
+    copy: "Reserve a standard slot, see the material rate and GST upfront, and follow one order from booking to QC and dispatch.",
     icon: Building2,
     points: [
       "Lower sourcing friction through aggregated city demand",
       "Predictable fixed 100-sheet slot for project and stock planning",
-      "10/40/50 milestone payments instead of an opaque full advance",
+      "Direct slot confirmation without an online payment gateway",
       "QC evidence and WhatsApp order updates before dispatch",
     ],
-    metric: "10%",
-    metricLabel: "to reserve an available slot",
+    metric: "1 click",
+    metricLabel: "to confirm and lock available slots",
   },
   {
     kicker: "FOR OEM PLYWOOD FACTORIES",
@@ -53,7 +53,7 @@ const audiences = [
     points: [
       "Fewer small negotiations and clearer batch specifications",
       "Aggregated orders aligned to vehicle payload and destination",
-      "Structured payment checkpoints before production and dispatch",
+      "Clear buyer commitments before production and dispatch",
       "Repeat demand data by grade, thickness, city and pool velocity",
     ],
     metric: "1 load",
@@ -64,15 +64,15 @@ const audiences = [
 const faqs = [
   {
     q: "What is a PLYDECK buying pool?",
-    a: "A buying pool combines verified B2B demand from multiple buyers into a shared city-bound shipment. Each buyer reserves one or more published slots and receives an individual order, invoice and payment schedule.",
+    a: "A buying pool combines verified B2B demand from multiple buyers into a shared city-bound shipment. Each buyer confirms one or more published slots and receives an individual reservation and order record.",
   },
   {
     q: "What is included in one OEM plywood slot?",
     a: "The current OEM slot contains 100 sheets: 50 MR 16mm, 20 BWP 16mm, 15 MR 6mm and 15 BWP 6mm, all in 8 × 4 ft size. The published composition is fixed for every buyer in that pool.",
   },
   {
-    q: "How do the 10%, 40% and 50% payments work?",
-    a: "You pay 10% to reserve. A further 40% is due when the pool fills and moves to supplier confirmation. The final 50% is due after the QC report is released and before dispatch.",
+    q: "Do I need to make an online payment to reserve?",
+    a: "No. Select the available slots, review the fixed contents, price and GST, accept the booking terms and confirm. The selected slots are locked immediately against your verified business account.",
   },
   {
     q: "Are rates the same in every city?",
@@ -80,11 +80,11 @@ const faqs = [
   },
   {
     q: "How is quality checked?",
-    a: "The confirmed product specification governs the supply. PLYDECK records the batch QC result before requesting the final payment. Buyers should also record visible shortages or transit damage at collection or delivery.",
+    a: "The confirmed product specification governs the supply. PLYDECK records the batch QC result before dispatch. Buyers should also record visible shortages or transit damage at collection or delivery.",
   },
   {
     q: "What happens if a pool does not fill?",
-    a: "PLYDECK may extend or cancel an underfilled pool. If PLYDECK cancels before fulfilment, collected amounts for the undelivered order are refundable under the published refund policy.",
+    a: "PLYDECK may extend or cancel an underfilled pool. Because the platform does not collect an online booking payment, the reservation is simply marked cancelled and the buyer is notified.",
   },
   {
     q: "Can I change the sheet mix in a slot?",
@@ -92,7 +92,7 @@ const faqs = [
   },
   {
     q: "Do I need a GST-registered business account?",
-    a: "Yes. Slot booking is designed for retailers, contractors and other business buyers. Business, GST and billing details must be completed before a paid reservation.",
+    a: "Yes. Slot booking is designed for retailers, contractors and other business buyers. Business, GST and billing details must be completed before confirming a reservation.",
   },
 ];
 
@@ -184,7 +184,7 @@ export function MarketingSections({
           <p>
             PLYDECK coordinates the commercial pieces that ordinary material
             listings leave fragmented—from a standard buying unit to truckload
-            utilisation, payment discipline and QC-led release.
+            utilisation, verified buyer commitments and QC-led release.
           </p>
         </div>
         <div className="moat-grid">
@@ -201,7 +201,7 @@ export function MarketingSections({
           <article>
             <span>03</span><ShieldCheck size={25} />
             <h3>Controlled fulfilment</h3>
-            <p>Milestone payments, locked specifications and QC reduce avoidable surprises.</p>
+            <p>Locked specifications, confirmed reservations and QC reduce avoidable surprises.</p>
           </article>
           <article>
             <span>04</span><BarChart3 size={25} />
@@ -312,9 +312,9 @@ export function MarketingSections({
         </div>
         <div className="process-grid">
           <article><span>01</span><BadgeIndianRupee size={24} /><h3>Review the pool</h3><p>Check the fixed slot, rate per sft, GST, closing time and city.</p></article>
-          <article><span>02</span><Handshake size={24} /><h3>Reserve with 10%</h3><p>Log in with GST details, select available slots and complete payment.</p></article>
-          <article><span>03</span><Factory size={24} /><h3>Confirm at 40%</h3><p>When the pool fills, the shared order moves to supplier commitment.</p></article>
-          <article><span>04</span><ClipboardCheck size={24} /><h3>QC and dispatch</h3><p>Review the QC update, pay the final 50% and receive dispatch status.</p></article>
+          <article><span>02</span><Handshake size={24} /><h3>Confirm your slots</h3><p>Log in with GST details, select available slots and confirm the reservation.</p></article>
+          <article><span>03</span><Factory size={24} /><h3>Pool confirmation</h3><p>When the pool fills, the shared order moves to supplier commitment.</p></article>
+          <article><span>04</span><ClipboardCheck size={24} /><h3>QC and dispatch</h3><p>Review the QC update and follow the order through dispatch.</p></article>
         </div>
       </section>
 

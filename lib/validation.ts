@@ -96,12 +96,12 @@ export const shipmentSchema = z
     packing_kg: nonnegative.max(10000),
   })
   .refine((s) => s.packing_kg < s.payload_kg, "Packing exceeds payload.");
-export const checkoutSchema = z
+export const reservationSchema = z
   .object({
     pool_id: z.uuid(),
     slot_numbers: z.array(z.number().int().min(1).max(100)).min(1).max(100),
     expected_total: z.number().int().positive(),
-    terms_version: z.literal("2026-09-p1"),
+    terms_version: z.literal("2026-09-direct-1"),
   })
   .refine(
     (v) => new Set(v.slot_numbers).size === v.slot_numbers.length,

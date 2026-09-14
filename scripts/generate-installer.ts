@@ -8,10 +8,11 @@ const files = [
   "005_independent_thickness_quantities.sql",
   "006_fixed_100_sheet_slot_mix.sql",
   "007_fixed_four_item_slot.sql",
+  "008_direct_slot_reservations.sql",
 ];
 
 let sql = `-- PLYDECK: ONE-FILE INSTALLER FOR A NEW, EMPTY SUPABASE PROJECT ONLY.
--- Includes migrations 001 through 007 and the seed. Run the ENTIRE file once.
+-- Includes migrations 001 through 008 and the seed. Run the ENTIRE file once.
 -- Do NOT run the individual migrations afterwards; they are already included.
 -- Existing installations: follow supabase/README_SQL.md instead.
 -- No credentials or administrator assignments are included.

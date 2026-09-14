@@ -21,13 +21,12 @@ import {
   Info,
   MessageCircle,
 } from "lucide-react";
-import type { Pool, StoreData, Profile, Order, Stage } from "@/lib/types";
+import type { Pool, StoreData, Profile, Order } from "@/lib/types";
 import { demoSeed } from "@/lib/seed";
 import {
   quoteSlot,
   money,
   rupees,
-  nextStage,
   TERMS_VERSION,
   FIXED_SLOT_ITEMS,
 } from "@/lib/pricing";
@@ -41,14 +40,6 @@ import {
 } from "./marketing-sections";
 import { SiteFooter } from "./site-footer";
 
-declare global {
-  interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => {
-      open: () => void;
-      on: (event: string, fn: (arg: any) => void) => void;
-    };
-  }
-}
 const cities = ["Bengaluru", "Hyderabad"];
 const emptyProfile: Profile = {
   business_name: "",
@@ -64,7 +55,7 @@ const emptyProfile: Profile = {
 const statusLabel = (status: string) =>
   ({
     live: "Open for booking",
-    confirming: "40% payment due",
+    confirming: "Pool confirmation in progress",
     confirmed: "Pool confirmed",
     qc_ready: "QC complete",
     dispatched: "Dispatched",
@@ -198,7 +189,7 @@ export default function Storefront() {
         {
           name: "configure_plywood_pool",
           description:
-            "Open a plywood pool configurator in the chosen city. Does not reserve a slot or make a payment.",
+            "Open a plywood pool configurator in the chosen city. This does not reserve a slot until the buyer confirms.",
           inputSchema: {
             type: "object",
             properties: { poolCode: { type: "string" } },
@@ -321,79 +312,10 @@ export default function Storefront() {
         await api("waitlist", { pool_id: pool.id });
         await refresh();
       }
-      setNotice("You are on the waiting list. No payment has been taken.");
+      setNotice("You are on the waiting list.");
     } catch (e) {
       notifyError(e);
     }
-  }
-  async function payRazorpay(payload: {
-    order_id: string;
-    razorpay_order_id: string;
-    key: string;
-    amount: number;
-  }) {
-    if (!window.Razorpay)
-      await new Promise<void>((resolve, reject) => {
-        const s = document.createElement("script");
-        s.src = "https://checkout.razorpay.com/v1/checkout.js";
-        s.onload = () => resolve();
-        s.onerror = () =>
-          reject(
-            new Error(
-              "Payment checkout could not load. Please retry from My orders.",
-            ),
-          );
-        document.body.appendChild(s);
-      });
-    await new Promise<void>((resolve, reject) => {
-      const checkout = new window.Razorpay!({
-        key: payload.key,
-        amount: payload.amount,
-        currency: "INR",
-        name: "PLYDECK",
-        description: "Plywood pool payment",
-        order_id: payload.razorpay_order_id,
-        prefill: {
-          name: profile.contact_name,
-          email: profile.email,
-          contact: profile.phone,
-        },
-        theme: { color: "#0d373f" },
-        handler: async (result: {
-          razorpay_payment_id: string;
-          razorpay_order_id: string;
-          razorpay_signature: string;
-        }) => {
-          try {
-            const verified = await api<{
-              verified: boolean;
-              refund_pending?: boolean;
-            }>("payments/verify", { ...result, order_id: payload.order_id });
-            if (!verified.verified)
-              throw new Error(
-                "Payment received after this reservation became unavailable. It is in the full-refund queue; no slot was reserved.",
-              );
-            resolve();
-          } catch (e) {
-            reject(e);
-          }
-        },
-        modal: {
-          ondismiss: () =>
-            reject(
-              new Error(
-                "Checkout closed. Any active slot hold expires after 15 minutes; resume from My orders.",
-              ),
-            ),
-        },
-      });
-      checkout.on("payment.failed", () =>
-        reject(
-          new Error("Payment was not completed. You can retry from My orders."),
-        ),
-      );
-      checkout.open();
-    });
   }
   async function reserve(pool: Pool, slots: number[]) {
     if (!user) {
@@ -421,7 +343,7 @@ export default function Storefront() {
           const orders = (data.orders ?? []).filter(
             (o) =>
               o.pool_id === p.id &&
-              !["cancelled", "defaulted", "refunded"].includes(o.status),
+              !["cancelled", "expired"].includes(o.status),
           );
           const actual = orders.reduce((sum, o) => sum + o.quote.weight_kg, 0);
           const used = orders.reduce(
@@ -443,7 +365,7 @@ export default function Storefront() {
           secondary_qty: quote.secondary_qty,
           status: "booked",
           quote,
-          paid_amount: quote.stages.booking,
+          paid_amount: 0,
           created_at: new Date().toISOString(),
           profile_snapshot: profile,
         };
@@ -469,31 +391,20 @@ export default function Storefront() {
           {
             order_ref: order.id.slice(0, 8).toUpperCase(),
             pool_code: pool.code,
-            amount: money(quote.stages.booking, 2),
           },
         );
       } else {
-        const payment = await api<{
-          order_id: string;
-          razorpay_order_id: string;
-          key: string;
-          amount: number;
-        }>("checkout", {
+        await api<{ reserved: true }>("reservations", {
           pool_id: pool.id,
           slot_numbers: slots,
           expected_total: quote.total,
           terms_version: TERMS_VERSION,
         });
-        await payRazorpay(payment);
         await refresh();
       }
       setSelected(null);
       setView("orders");
-      setNotice(
-        DEMO
-          ? "Demo reservation created. No money was charged."
-          : "Payment verified. Your slots are reserved.",
-      );
+      setNotice("Reservation confirmed. Your selected slots are now locked.");
     } catch (e) {
       notifyError(e);
       if (!DEMO) await refresh();
@@ -501,72 +412,28 @@ export default function Storefront() {
       setLoading(false);
     }
   }
-  async function payStage(order: Order, stage: Stage) {
-    setLoading(true);
-    try {
-      if (DEMO) {
-        setData((d) => ({
-          ...d,
-          orders: d.orders?.map((o) =>
-            o.id === order.id
-              ? {
-                  ...o,
-                  paid_amount: o.paid_amount + o.quote.stages[stage],
-                  status:
-                    stage === "booking"
-                      ? "booked"
-                      : stage === "confirmation"
-                        ? "confirmed"
-                        : "paid",
-                }
-              : o,
-          ),
-        }));
-      } else {
-        const payment = await api<{
-          order_id: string;
-          razorpay_order_id: string;
-          key: string;
-          amount: number;
-        }>("payments/create", { order_id: order.id, stage });
-        await payRazorpay(payment);
-        await refresh();
-      }
-      setNotice(
-        DEMO
-          ? "Demo instalment recorded. No money was charged."
-          : "Payment verified.",
-      );
-    } catch (e) {
-      notifyError(e);
-    } finally {
-      setLoading(false);
-    }
-  }
   async function requestCancellation(order: Order) {
     if (
       !window.confirm(
-        "Request cancellation of this order? The published refund terms apply.",
+        "Request cancellation of this slot reservation?",
       )
     )
       return;
     try {
       if (DEMO) {
         const p = data.pools.find((p) => p.id === order.pool_id);
-        const refundable = p?.status === "live" || p?.status === "confirming";
+        const releasable = p?.status === "live" || p?.status === "confirming";
         setData((d) => ({
           ...d,
           orders: d.orders?.map((o) =>
             o.id === order.id
               ? {
                   ...o,
-                  status: refundable
-                    ? "refund_pending"
-                    : "cancellation_requested",
+                  status: releasable ? "cancelled" : "cancellation_requested",
                 }
               : o,
           ),
-          pools: refundable
+          pools: releasable
             ? d.pools.map((p) =>
                 p.id === order.pool_id
                   ? {
@@ -578,24 +445,12 @@ export default function Storefront() {
                   : p,
               )
             : d.pools,
-          refunds: [
-            ...(d.refunds ?? []),
-            {
-              id: crypto.randomUUID(),
-              order_id: order.id,
-              amount: refundable ? order.paid_amount : 0,
-              status: "review",
-              reason: "Buyer cancellation request",
-            },
-          ],
         }));
       } else {
         await api("orders/cancel", { order_id: order.id });
         await refresh();
       }
-      setNotice(
-        "Cancellation request recorded. The applicable refund will be reviewed.",
-      );
+      setNotice("Cancellation request recorded.");
     } catch (e) {
       notifyError(e);
     }
@@ -621,9 +476,7 @@ export default function Storefront() {
     <>
       {DEMO && (
         <div className="demo-bar">
-          <span>
-            DEMO PREVIEW · Sample prices and bookings. No real payments.
-          </span>
+          <span>DEMO PREVIEW · Sample prices and direct slot reservations.</span>
           <button
             onClick={() => {
               setData((d) => ({ ...d, isAdmin: true }));
@@ -748,7 +601,7 @@ export default function Storefront() {
                     <ShieldCheck size={16} /> QC before dispatch
                   </span>
                   <span>
-                    <Layers3 size={16} /> Reserve with 10%
+                    <Layers3 size={16} /> Direct slot booking
                   </span>
                   <span>
                     <Truck size={16} /> Shared truckload
@@ -765,7 +618,7 @@ export default function Storefront() {
                   <small>Currently serving Bangalore &amp; Hyderabad.</small>
                 </div>
                 <div className="hero-stat hero-stat-top"><strong>100</strong><span>fixed sheets<br />per OEM slot</span></div>
-                <div className="hero-stat hero-stat-bottom"><strong>10%</strong><span>to reserve<br />an open slot</span></div>
+                <div className="hero-stat hero-stat-bottom"><strong>1 click</strong><span>to confirm<br />and lock a slot</span></div>
                 <span className="image-caption">Representative imagery</span>
               </div>
             </section>
@@ -785,13 +638,13 @@ export default function Storefront() {
               <div>
                 <span>03</span>
                 <p>
-                  Reserve with 10%<strong>Pay in clear milestones</strong>
+                  Confirm reservation<strong>Lock your selected slots</strong>
                 </p>
               </div>
               <div>
                 <span>04</span>
                 <p>
-                  Quality checked<strong>Balance paid before dispatch</strong>
+                  Quality checked<strong>Track through dispatch</strong>
                 </p>
               </div>
             </div>
@@ -920,12 +773,12 @@ export default function Storefront() {
               <div>
                 <h3>Your material. Your numbers. No guesswork.</h3>
                 <p>
-                  See the rate per sft, taxable value, GST and all
-                  three payments before you book.
+                  See the rate per sft, taxable value and GST before you confirm
+                  and lock a slot.
                 </p>
               </div>
               <button className="text-button" onClick={() => setTerms(true)}>
-                How payments & refunds work <ArrowUpRight size={18} />
+                Booking and cancellation terms <ArrowUpRight size={18} />
               </button>
             </section>
             <MarketingSections
@@ -1001,7 +854,7 @@ export default function Storefront() {
                 <Package size={36} />
                 <h3>Your first pool starts here.</h3>
                 <p>
-                  Reserve a slot to see your price, GST and payment milestones.
+                  Reserve a slot to see its fixed contents, price and GST.
                 </p>
                 <button
                   className="button dark"
@@ -1014,16 +867,6 @@ export default function Storefront() {
               data.orders.map((order) => {
                 const pool = data.pools.find((p) => p.id === order.pool_id);
                 if (!pool) return null;
-                const stage = [
-                  "cancelled",
-                  "defaulted",
-                  "refund_pending",
-                  "refunded",
-                  "cancellation_requested",
-                  "expired",
-                ].includes(order.status)
-                  ? null
-                  : nextStage(order, pool.status);
                 return (
                   <article className="order-card" key={order.id}>
                     <div className="order-top">
@@ -1048,29 +891,14 @@ export default function Storefront() {
                         <strong>{money(order.quote.total, 2)}</strong>
                       </div>
                       <div>
-                        <span>Paid</span>
-                        <strong>{money(order.paid_amount, 2)}</strong>
+                        <span>Reserved slots</span>
+                        <strong>{order.slot_numbers.length}</strong>
                       </div>
                       <div>
-                        <span>Outstanding</span>
-                        <strong>
-                          {money(
-                            [
-                              "cancelled",
-                              "defaulted",
-                              "refund_pending",
-                              "refunded",
-                              "expired",
-                              "cancellation_requested",
-                            ].includes(order.status)
-                              ? 0
-                              : order.quote.total - order.paid_amount,
-                            2,
-                          )}
-                        </strong>
+                        <span>Total sheets</span>
+                        <strong>{order.quote.sheets}</strong>
                       </div>
                     </div>
-                    <Milestones quote={order.quote} paid={order.paid_amount} />
                     {pool.delivery_target && (
                       <p className="order-note">
                         <Truck size={17} /> Target hub delivery:{" "}
@@ -1080,16 +908,6 @@ export default function Storefront() {
                         )}
                       </p>
                     )}
-                    {(order.payment_due_at || pool.payment_due_at) &&
-                      stage &&
-                      stage !== "booking" && (
-                        <p className="order-note">
-                          <Clock3 size={17} /> Payment due:{" "}
-                          {new Date(
-                            order.payment_due_at || pool.payment_due_at!,
-                          ).toLocaleString("en-IN")}
-                        </p>
-                      )}
                     {pool.qc_report && (
                       <details className="breakdown">
                         <summary>Quality check report</summary>
@@ -1102,27 +920,8 @@ export default function Storefront() {
                       <CustomerPriceSummary pool={pool} quote={order.quote} />
                     </details>
                     <div className="order-actions">
-                      {stage && (
-                        <button
-                          className="button dark"
-                          disabled={loading}
-                          onClick={() => payStage(order, stage)}
-                        >
-                          Pay{" "}
-                          {stage === "booking"
-                            ? "10% booking"
-                            : stage === "confirmation"
-                              ? "40% confirmation"
-                              : "50% dispatch"}{" "}
-                          · {money(order.quote.stages[stage], 2)}
-                          <ArrowRight size={17} />
-                        </button>
-                      )}
                       {![
                         "cancelled",
-                        "defaulted",
-                        "refund_pending",
-                        "refunded",
                         "dispatched",
                         "cancellation_requested",
                       ].includes(order.status) && (
@@ -1256,7 +1055,7 @@ export default function Storefront() {
       )}
       {terms && (
         <Dialog
-          title="Payment, delivery & refund terms"
+          title="Booking, delivery & cancellation terms"
           wide
           onClose={() => setTerms(false)}
         >
@@ -1346,12 +1145,9 @@ function PoolCard({
         <p className="booking-caption">
           <LockKeyhole size={13} />
           {available ? (
-            <>
-              Reserve from <strong>{money(quote.stages.booking, 2)}</strong> ·
-              10% today
-            </>
+            <>Confirm directly · selected slots lock immediately</>
           ) : (
-            <>No payment required · {pool.waitlist_count ?? 0} waiting</>
+            <>{pool.waitlist_count ?? 0} buyers waiting</>
           )}
         </p>
       </div>
@@ -1410,45 +1206,6 @@ function CustomerPriceSummary({
     </div>
   );
 }
-function Milestones({
-  quote,
-  paid = 0,
-}: {
-  quote: ReturnType<typeof quoteSlot>;
-  paid?: number;
-}) {
-  let cumulative = 0;
-  return (
-    <div className="milestones">
-      {(["booking", "confirmation", "dispatch"] as Stage[]).map((stage, i) => {
-        cumulative += quote.stages[stage];
-        const completed = paid >= cumulative;
-        return (
-          <div key={stage} className={completed ? "complete" : ""}>
-            <span className="milestone-number">
-              {completed ? <Check size={15} /> : i + 1}
-            </span>
-            <strong>
-              {[10, 40, 50][i]}% ·{" "}
-              {["Book your slot", "Pool confirmation", "After QC"][i]}
-            </strong>
-            <b>{money(quote.stages[stage], 2)}</b>
-            <small>
-              {completed
-                ? "Payment received"
-                : [
-                    "Reserve today",
-                    "Due on confirmation notice",
-                    "Before dispatch",
-                  ][i]}
-            </small>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 function SlotDialog({
   pool,
   offer,
@@ -1490,7 +1247,7 @@ function SlotDialog({
             <p className="info-box">
               Waiting-list replacement: this released slot keeps the same fixed
               plywood composition because QC is complete. Review the QC report
-              before payment. All three instalments must clear before dispatch.
+              before confirming the replacement slot.
             </p>
           )}
           <p className="muted">
@@ -1563,14 +1320,17 @@ function SlotDialog({
             </dl>
             <p>{c.specification}</p>
             <p>
-              Target: city hub delivery within a week after final pool
-              confirmation. QC and cleared final payment are required before
-              dispatch. Local delivery is separately quoted.
+              Target: city hub delivery within a week after pool confirmation.
+              QC is recorded before dispatch. Local delivery is separately
+              quoted.
             </p>
           </details>
           <div className="config-block">
-            <h3>03 / Know your payment milestones</h3>
-            <Milestones quote={quote} />
+            <h3>03 / Confirm and lock</h3>
+            <p className="muted">
+              Confirming creates your order immediately and locks the selected
+              slots. No online payment or payment gateway is used.
+            </p>
           </div>
           <button className="text-button" onClick={onWaitlist}>
             Prefer to wait? Join this pool’s waiting list{" "}
@@ -1595,9 +1355,9 @@ function SlotDialog({
             )}
           </div>
           <CustomerPriceSummary pool={pool} quote={quote} />
-          <div className="pay-today">
-            <span>Pay 10% to reserve</span>
-            <strong>{money(quote.stages.booking, 2)}</strong>
+          <div className="pay-today reservation-lock-summary">
+            <span>Booking method</span>
+            <strong>Direct confirmation</strong>
           </div>
           <label className="checkbox-label">
             <input
@@ -1608,10 +1368,10 @@ function SlotDialog({
             <span>
               I accept the{" "}
               <button className="inline-link" onClick={onTerms}>
-                payment and refund terms
+                booking and cancellation terms
               </button>
-              , including the commitment conditions after 50% payment and pool
-              confirmation.
+              . I understand that confirming immediately locks the selected
+              slots against my business account.
             </span>
           </label>
           <button
@@ -1628,14 +1388,13 @@ function SlotDialog({
               ? "Pool closed"
               : loggedIn
                 ? DEMO
-                  ? "Reserve in demo"
-                  : "Pay 10% & reserve"
+                  ? "Confirm demo reservation"
+                  : "Confirm & lock slots"
                 : "Log in to reserve"}
           </button>
           <p className="tiny muted centered">
-            {DEMO
-              ? "Demo simulation. No payment will be collected."
-              : "Secure checkout by Razorpay. GST invoice details required."}
+            No online payment is collected. GST business details are required
+            for the reservation record.
           </p>
         </aside>
       </div>
@@ -1689,7 +1448,7 @@ function AuthDialog({
       onClose={onClose}
     >
       <p className="muted">
-        Keep your pool reservations, payments and business details in one place.
+        Keep your pool reservations and business details in one place.
       </p>
       {DEMO ? (
         <div className="demo-login">
