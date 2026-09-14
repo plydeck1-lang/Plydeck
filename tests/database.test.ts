@@ -15,7 +15,7 @@ async function database(combined = false) {
   if (combined) {
     await db.exec(readFileSync("supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql", "utf8"));
   } else {
-    for (const file of ["001_plydeck.sql","002_replacement_slots.sql","003_whatsapp_notifications.sql","004_whatsapp_delivery_fixes.sql","005_independent_thickness_quantities.sql","006_fixed_100_sheet_slot_mix.sql","007_fixed_four_item_slot.sql","008_direct_slot_reservations.sql"])
+    for (const file of ["001_plydeck.sql","002_replacement_slots.sql","003_whatsapp_notifications.sql","004_whatsapp_delivery_fixes.sql","005_independent_thickness_quantities.sql","006_fixed_100_sheet_slot_mix.sql","007_fixed_four_item_slot.sql","008_direct_slot_reservations.sql","009_admin_slot_blocks_manual_payments.sql"])
       await db.exec(readFileSync(`supabase/migrations/${file}`, "utf8"));
     await db.exec(readFileSync("supabase/seed.sql", "utf8"));
   }
@@ -30,6 +30,13 @@ async function reserve(db: PGlite, slots: number[], user = BUYER) {
   const p = (await db.query<any>("select * from pools where id=$1",[POOL_ONE])).rows[0];
   const q = quoteSlot(p, slots.length);
   return (await db.query<any>("select reserve_slots($1,$2,$3,$4,$5,$6,$7)as result",[user,POOL_ONE,slots,q.primary_qty,q.secondary_qty,JSON.stringify(q),p.updated_at])).rows[0].result;
+}
+
+async function recordPayment(db: PGlite, orderId: string, stage: "booking" | "confirmation" | "final") {
+  return (await db.query<any>(
+    "select record_manual_payment($1,$2,$3,$4,$5,$6,$7) as result",
+    [ADMIN, orderId, stage, "bank_transfer", `UTR-${stage}`, "Test receipt verified", new Date().toISOString()],
+  )).rows[0].result;
 }
 
 test("direct reservation locks slots, stores no payment and enforces exclusivity", async () => {
@@ -49,16 +56,41 @@ test("direct reservation locks slots, stores no payment and enforces exclusivity
   } finally { await db.close(); }
 });
 
-test("admin can confirm, QC and dispatch a fully reserved pool without payments", async () => {
+test("admin can block and unblock an available slot but cannot block a reservation", async () => {
   const db = await database();
   try {
-    await reserve(db,[1,2,3,4,5]);
+    await db.query("select manage_blocked_slot($1,$2,$3,$4,$5)",[ADMIN,POOL_ONE,1,true,"Held for factory allocation"]);
+    await assert.rejects(() => reserve(db,[1]),/blocked/);
+    await db.query("select manage_blocked_slot($1,$2,$3,$4,$5)",[ADMIN,POOL_ONE,1,false,""]);
+    const order = await reserve(db,[1]);
+    await assert.rejects(
+      () => db.query("select manage_blocked_slot($1,$2,$3,$4,$5)",[ADMIN,POOL_ONE,1,true,"Try to block reserved"]),
+      /reserved slot cannot be blocked/,
+    );
+    assert.equal(order.status,"booked");
+  } finally { await db.close(); }
+});
+
+test("reserved and blocked slots can confirm after 50 percent manual payment", async () => {
+  const db = await database();
+  try {
+    const order = await reserve(db,[1,2,3,4]);
+    await db.query("select manage_blocked_slot($1,$2,$3,$4,$5)",[ADMIN,POOL_ONE,5,true,"Internal allocation"]);
+    await assert.rejects(() => db.query("select transition_pool($1,$2,$3,$4)",[ADMIN,POOL_ONE,"confirm",""]),/50 percent/);
+    await assert.rejects(() => recordPayment(db,order.id,"confirmation"),/10 percent/);
+    await recordPayment(db,order.id,"booking");
+    await recordPayment(db,order.id,"confirmation");
     await db.query("select transition_pool($1,$2,$3,$4)",[ADMIN,POOL_ONE,"confirm",""]);
     assert.equal((await db.query<any>("select status from pools where id=$1",[POOL_ONE])).rows[0].status,"confirmed");
     await db.query("select transition_pool($1,$2,$3,$4)",[ADMIN,POOL_ONE,"qc","QC passed: all sheets inspected and accepted for dispatch."]);
+    await assert.rejects(() => db.query("select transition_pool($1,$2,$3,$4)",[ADMIN,POOL_ONE,"dispatch",""]),/full payment/);
+    await recordPayment(db,order.id,"final");
     await db.query("select transition_pool($1,$2,$3,$4)",[ADMIN,POOL_ONE,"dispatch",""]);
     assert.equal((await db.query<any>("select status from pools where id=$1",[POOL_ONE])).rows[0].status,"dispatched");
     assert.equal((await db.query<any>("select count(*)::int as n from orders where pool_id=$1 and status='dispatched'",[POOL_ONE])).rows[0].n,1);
+    const total = (await db.query<any>("select (quote->>'total')::bigint as total,paid_amount from orders where id=$1",[order.id])).rows[0];
+    assert.equal(Number(total.paid_amount),Number(total.total));
+    assert.equal((await db.query<any>("select count(*)::int as n from manual_payments where order_id=$1",[order.id])).rows[0].n,3);
   } finally { await db.close(); }
 });
 
@@ -74,9 +106,11 @@ test("publish remains admin-only and WhatsApp booking event is queued for opt-in
   } finally { await db.close(); }
 });
 
-test("combined installer includes direct reservation migration and stays guarded", () => {
+test("combined installer includes admin slot and manual payment migration and stays guarded", () => {
   const sql = readFileSync("supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql","utf8");
   assert.match(sql,/008_direct_slot_reservations\.sql/);
+  assert.match(sql,/009_admin_slot_blocks_manual_payments\.sql/);
+  assert.match(sql,/record_manual_payment/i);
   assert.match(sql,/direct slot booking overlay/i);
   assert.match(sql,/Existing tables found/);
 });

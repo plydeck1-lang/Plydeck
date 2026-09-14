@@ -895,10 +895,15 @@ export default function Storefront() {
                         <strong>{order.slot_numbers.length}</strong>
                       </div>
                       <div>
-                        <span>Total sheets</span>
-                        <strong>{order.quote.sheets}</strong>
+                        <span>Payment confirmed</span>
+                        <strong>{money(order.paid_amount, 2)}</strong>
+                      </div>
+                      <div>
+                        <span>Balance</span>
+                        <strong>{money(Math.max(0, order.quote.total - order.paid_amount), 2)}</strong>
                       </div>
                     </div>
+                    <p className="tiny muted">Payments are confirmed manually by PLYDECK operations after offline receipt verification.</p>
                     {pool.delivery_target && (
                       <p className="order-note">
                         <Truck size={17} /> Target hub delivery:{" "}

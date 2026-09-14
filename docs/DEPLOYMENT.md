@@ -14,7 +14,7 @@ Set `NEXT_PUBLIC_DEMO_MODE=true` for the browser-only demo. For connected mode s
 
 ## 2. Supabase
 
-For a new project, run `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` once. For the existing PLYDECK project, run `supabase/migrations/008_direct_slot_reservations.sql` after migration 007. The migration preserves historical payment tables for audit but revokes their client access and replaces booking, pool transitions and cancellation with direct reservation logic.
+For a new project, run `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` once. For the existing PLYDECK project, run migration 008 after 007, then `supabase/migrations/009_admin_slot_blocks_manual_payments.sql`. If 008 is already installed, run only 009. Migration 009 adds slot blocking and auditable offline receipt confirmations; it does not add a payment gateway.
 
 Create a user, then run `supabase/admin/CREATE_FIRST_ADMIN.sql` with that user UUID. Configure the Auth site URL and redirect URL to your Vercel origin.
 
@@ -35,6 +35,6 @@ npm.cmd run test
 npm.cmd run build
 ```
 
-In a preview environment: create a buyer profile, confirm a slot, verify the slot is no longer available, reserve another slot as a second buyer, fill all slots as admin, run confirm → QC → dispatch, and verify the direct reservation WhatsApp event for an opted-in profile. Test cancellation while the pool is live and confirm that the slot is released without a refund record.
+In a preview environment: create a buyer profile, reserve a slot, block and unblock a different slot as admin, and verify neither action can overwrite a reservation. In Manage > Orders, confirm the 10% and 40% offline receipts. Reserve or block every pool slot, confirm the pool, record QC, confirm the final 50% and dispatch. Verify the booking WhatsApp event for an opted-in profile.
 
 Before launch, replace provisional legal identity, supplier specifications, rates, freight and GST details with the operating entity's reviewed commercial terms.

@@ -11,6 +11,8 @@ import {
   Settings2,
   MessageCircle,
   RefreshCcw,
+  Ban,
+  BadgeIndianRupee,
 } from "lucide-react";
 import { Dialog } from "./dialog";
 import type {
@@ -20,6 +22,8 @@ import type {
   PoolConfig,
   Shipment,
   RateCard,
+  Order,
+  ManualPayment,
 } from "@/lib/types";
 import { initialConfig } from "@/lib/seed";
 import {
@@ -53,6 +57,8 @@ export function AdminPanel({
     [pool, setPool] = useState<Pool | null>(null),
     [category, setCategory] = useState<Category | null>(null),
     [shipment, setShipment] = useState<Shipment | null>(null),
+    [slotManager, setSlotManager] = useState<Pool | null>(null),
+    [paymentOrder, setPaymentOrder] = useState<Order | null>(null),
     [busy, setBusy] = useState(false),
     [whatsappStatus, setWhatsappStatus] = useState<any>(null);
   useEffect(() => {
@@ -128,11 +134,23 @@ export function AdminPanel({
             o.pool_id === p.id &&
             !["cancelled", "expired"].includes(o.status),
         );
-        const filled = orders.reduce((n, o) => n + o.slot_numbers.length, 0);
+        const filled = (p.allocations ?? []).filter((entry) =>
+          ["reserved", "booked", "blocked"].includes(entry.status),
+        ).length;
         if (action === "publish" && p.config.specification.length < 20)
           throw new Error("Add the complete product specification.");
         if (action === "confirm" && filled !== p.total_slots)
-          throw new Error("All slots must be reserved before pool confirmation.");
+          throw new Error("All slots must be reserved or blocked before pool confirmation.");
+        if (
+          action === "confirm" &&
+          orders.some((order) => order.paid_amount < Math.round(order.quote.total * 0.5))
+        )
+          throw new Error("Confirm 10% + 40% manual payments for every reserved order first.");
+        if (
+          action === "dispatch" &&
+          orders.some((order) => order.paid_amount !== order.quote.total)
+        )
+          throw new Error("Confirm the final 50% payment for every reserved order first.");
         const status = (
           {
             publish: "live",
@@ -225,6 +243,71 @@ export function AdminPanel({
       onError(e);
     }
   }
+  async function setSlotBlocked(p: Pool, slotNo: number, blocked: boolean) {
+    const reason = blocked
+      ? window.prompt("Reason for blocking this slot:", "Reserved by PLYDECK operations") ?? ""
+      : "";
+    if (blocked && reason.trim().length < 3) return;
+    if (!blocked && !window.confirm(`Unblock slot ${slotNo} in ${p.code}?`)) return;
+    setBusy(true);
+    try {
+      if (DEMO) {
+        const existing = p.allocations ?? [];
+        if (blocked && existing.some((entry) => entry.slot_no === slotNo))
+          throw new Error("Only an available slot can be blocked.");
+        const allocations = blocked
+          ? [...existing, { slot_no: slotNo, status: "blocked", reason }]
+          : existing.filter((entry) => !(entry.slot_no === slotNo && entry.status === "blocked"));
+        const pools = data.pools.map((entry) => entry.id === p.id ? { ...entry, allocations } : entry);
+        onDemoChange({ ...data, pools });
+        setSlotManager({ ...p, allocations });
+      } else {
+        await api("admin", { action: "slot_block", pool_id: p.id, slot_no: slotNo, blocked, reason });
+        await onRefresh();
+        setSlotManager(null);
+      }
+      onNotice(blocked ? `Slot ${slotNo} blocked.` : `Slot ${slotNo} available again.`);
+    } catch (error) {
+      onError(error);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function confirmManualPayment(
+    order: Order,
+    entry: Pick<ManualPayment, "stage" | "method" | "reference" | "note" | "received_at">,
+  ) {
+    setBusy(true);
+    try {
+      const amount = paymentStageAmounts(order)[entry.stage];
+      if (DEMO) {
+        const payment: ManualPayment = {
+          id: crypto.randomUUID(),
+          order_id: order.id,
+          amount,
+          recorded_by: "demo-admin",
+          created_at: new Date().toISOString(),
+          ...entry,
+        };
+        const paidAmount = order.paid_amount + amount;
+        const status = entry.stage === "booking" ? "booked" : entry.stage === "confirmation" ? "confirmed" : "paid";
+        onDemoChange({
+          ...data,
+          manualPayments: [payment, ...(data.manualPayments ?? [])],
+          orders: data.orders?.map((item) => item.id === order.id ? { ...item, paid_amount: paidAmount, status } : item),
+        });
+      } else {
+        await api("admin", { action: "manual_payment", order_id: order.id, ...entry });
+        await onRefresh();
+      }
+      setPaymentOrder(null);
+      onNotice(`${paymentStageLabel(entry.stage)} payment confirmed.`);
+    } catch (error) {
+      onError(error);
+    } finally {
+      setBusy(false);
+    }
+  }
   const freshPool = (): Pool => ({
     id: crypto.randomUUID(),
     code: `BLR-OEM-${String(data.pools.length + 1).padStart(3, "0")}`,
@@ -289,7 +372,9 @@ export function AdminPanel({
                 </span>
                 <h2>{p.name}</h2>
                 <p>
-                  {p.allocations?.length ?? 0}/{p.total_slots} occupied ·{" "}
+                  {(p.allocations ?? []).filter((entry) => entry.status === "reserved" || entry.status === "booked").length} reserved ·{" "}
+                  {(p.allocations ?? []).filter((entry) => entry.status === "blocked").length} blocked ·{" "}
+                  {p.total_slots} total ·{" "}
                   {p.status.replaceAll("_", " ")} ·{" "}
                   {money(quoteSlot(p).total, 2)} / fixed slot incl. GST
                 </p>
@@ -302,6 +387,14 @@ export function AdminPanel({
                   )}
               </div>
               <div className="admin-actions">
+                {["draft", "live", "confirming"].includes(p.status) && (
+                  <button
+                    className="button outline small"
+                    onClick={() => setSlotManager(structuredClone(p))}
+                  >
+                    <Ban size={16} /> Manage slots
+                  </button>
+                )}
                 <button
                   className="button outline small"
                   onClick={() => setPool(structuredClone(p))}
@@ -474,12 +567,17 @@ export function AdminPanel({
                   <th>Order / buyer</th>
                   <th>Pool / slots</th>
                   <th>Order value</th>
+                  <th>Manual payment</th>
                   <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {data.orders?.map((o) => (
-                  <tr key={o.id}>
+                {data.orders?.map((o) => {
+                  const nextStage = nextPaymentStage(o);
+                  const poolStatus = data.pools.find((p) => p.id === o.pool_id)?.status;
+                  const finalLocked = nextStage === "final" && poolStatus !== "qc_ready";
+                  return <tr key={o.id}>
                     <td>
                       <strong>{o.id.slice(0, 8).toUpperCase()}</strong>
                       <small>
@@ -496,11 +594,30 @@ export function AdminPanel({
                     </td>
                     <td>
                       {money(o.quote.total, 2)}
-                      <small>Includes GST · no online payment</small>
+                      <small>Includes GST · offline collection</small>
+                    </td>
+                    <td>
+                      <strong>{money(o.paid_amount, 2)}</strong>
+                      <small>{paymentProgressLabel(o)}</small>
                     </td>
                     <td>{o.status.replaceAll("_", " ")}</td>
-                  </tr>
-                ))}
+                    <td>
+                      {nextStage && !["cancelled", "expired", "dispatched"].includes(o.status) ? (
+                        <button
+                          className="button outline small"
+                          disabled={busy || finalLocked}
+                          title={finalLocked ? "Release the QC report before confirming final payment" : `Confirm ${paymentStageLabel(nextStage)} payment`}
+                          onClick={() => setPaymentOrder(o)}
+                        >
+                          <BadgeIndianRupee size={16} />
+                          {finalLocked ? "Final after QC" : `Confirm ${paymentStagePercent(nextStage)}`}
+                        </button>
+                      ) : (
+                        <span className="badge neutral">Payment complete</span>
+                      )}
+                    </td>
+                  </tr>;
+                })}
               </tbody>
             </table>
             {!data.orders?.length && (
@@ -735,7 +852,143 @@ export function AdminPanel({
           </form>
         </Dialog>
       )}
+      {slotManager && (
+        <SlotManagerDialog
+          pool={slotManager}
+          busy={busy}
+          onClose={() => setSlotManager(null)}
+          onChange={(slotNo, blocked) => void setSlotBlocked(slotManager, slotNo, blocked)}
+        />
+      )}
+      {paymentOrder && (
+        <ManualPaymentDialog
+          order={paymentOrder}
+          poolStatus={data.pools.find((p) => p.id === paymentOrder.pool_id)?.status}
+          busy={busy}
+          onClose={() => setPaymentOrder(null)}
+          onConfirm={(entry) => void confirmManualPayment(paymentOrder, entry)}
+        />
+      )}
     </section>
+  );
+}
+type PaymentStage = ManualPayment["stage"];
+function paymentStageAmounts(order: Order): Record<PaymentStage, number> {
+  const booking = Math.round(order.quote.total * 0.1);
+  const confirmation = Math.round(order.quote.total * 0.4);
+  return { booking, confirmation, final: order.quote.total - booking - confirmation };
+}
+function nextPaymentStage(order: Order): PaymentStage | null {
+  const amounts = paymentStageAmounts(order);
+  if (order.paid_amount < amounts.booking) return "booking";
+  if (order.paid_amount < amounts.booking + amounts.confirmation) return "confirmation";
+  if (order.paid_amount < order.quote.total) return "final";
+  return null;
+}
+function paymentStagePercent(stage: PaymentStage) {
+  return stage === "booking" ? "10%" : stage === "confirmation" ? "40%" : "50%";
+}
+function paymentStageLabel(stage: PaymentStage) {
+  return stage === "booking" ? "booking" : stage === "confirmation" ? "pool confirmation" : "final";
+}
+function paymentProgressLabel(order: Order) {
+  const percent = Math.min(100, Math.round((order.paid_amount / order.quote.total) * 100));
+  return `${percent}% confirmed · ${money(order.quote.total - order.paid_amount, 2)} balance`;
+}
+function SlotManagerDialog({
+  pool,
+  busy,
+  onClose,
+  onChange,
+}: {
+  pool: Pool;
+  busy: boolean;
+  onClose: () => void;
+  onChange: (slotNo: number, blocked: boolean) => void;
+}) {
+  return (
+    <Dialog title={`${pool.code} · Slot controls`} onClose={onClose}>
+      <p className="muted">Block an available slot for an offline order, internal allocation or operational hold. Reserved slots cannot be blocked.</p>
+      <div className="admin-slot-manager">
+        {Array.from({ length: pool.total_slots }, (_, index) => {
+          const slotNo = index + 1;
+          const allocation = pool.allocations?.find((entry) => entry.slot_no === slotNo);
+          const blocked = allocation?.status === "blocked";
+          const available = !allocation;
+          return (
+            <div className={`admin-slot-control ${blocked ? "blocked" : allocation ? "reserved" : "available"}`} key={slotNo}>
+              <Layers3 size={21} />
+              <strong>Slot {String(slotNo).padStart(2, "0")}</strong>
+              <span>{blocked ? "Blocked" : allocation ? allocation.status.replaceAll("_", " ") : "Available"}</span>
+              {allocation?.reason && <small>{allocation.reason}</small>}
+              {available && <button className="button outline small" disabled={busy} onClick={() => onChange(slotNo, true)}>Block</button>}
+              {blocked && <button className="text-button danger" disabled={busy} onClick={() => onChange(slotNo, false)}>Unblock</button>}
+            </div>
+          );
+        })}
+      </div>
+    </Dialog>
+  );
+}
+function ManualPaymentDialog({
+  order,
+  poolStatus,
+  busy,
+  onClose,
+  onConfirm,
+}: {
+  order: Order;
+  poolStatus?: string;
+  busy: boolean;
+  onClose: () => void;
+  onConfirm: (entry: Pick<ManualPayment, "stage" | "method" | "reference" | "note" | "received_at">) => void;
+}) {
+  const stage = nextPaymentStage(order)!;
+  const amount = paymentStageAmounts(order)[stage];
+  const [method, setMethod] = useState<ManualPayment["method"]>("bank_transfer");
+  const [reference, setReference] = useState("");
+  const [note, setNote] = useState("");
+  const [receivedAt, setReceivedAt] = useState(() => {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  });
+  const finalLocked = stage === "final" && poolStatus !== "qc_ready";
+  return (
+    <Dialog title={`Confirm ${paymentStagePercent(stage)} manual payment`} onClose={onClose}>
+      <form className="form-stack" onSubmit={(event) => {
+        event.preventDefault();
+        onConfirm({ stage, method, reference, note, received_at: new Date(receivedAt).toISOString() });
+      }}>
+        <div className="manual-payment-summary">
+          <span>Order {order.id.slice(0, 8).toUpperCase()}</span>
+          <strong>{money(amount, 2)}</strong>
+          <small>{paymentStageLabel(stage)} · {paymentStagePercent(stage)} of order total</small>
+        </div>
+        {finalLocked && <p className="info-box">Release the QC report before confirming the final 50% payment.</p>}
+        <label>Payment method
+          <select value={method} onChange={(event) => setMethod(event.target.value as ManualPayment["method"])}>
+            <option value="bank_transfer">Bank transfer</option>
+            <option value="upi">UPI</option>
+            <option value="cash">Cash</option>
+            <option value="cheque">Cheque</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label>Transaction / receipt reference
+          <input required minLength={2} value={reference} onChange={(event) => setReference(event.target.value)} placeholder="UTR, UPI reference, receipt number…" />
+        </label>
+        <label>Received date and time
+          <input type="datetime-local" required value={receivedAt} onChange={(event) => setReceivedAt(event.target.value)} />
+        </label>
+        <label>Internal note
+          <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Optional reconciliation note" />
+        </label>
+        <button className="button dark" disabled={busy || finalLocked}>
+          <BadgeIndianRupee size={17} /> Confirm payment received
+        </button>
+        <p className="tiny muted">This is an audited offline receipt confirmation. No payment gateway transaction is created.</p>
+      </form>
+    </Dialog>
   );
 }
 function InfoIcon() {

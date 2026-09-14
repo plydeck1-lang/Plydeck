@@ -15,6 +15,25 @@
   --radius: 18px;
 }
 
+.admin-slot-manager { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.admin-slot-control { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: #fff; min-height: 170px; }
+.admin-slot-control>span { font-size: 13px; color: var(--muted); text-transform: capitalize; }
+.admin-slot-control>small { font-size: 11px; color: var(--muted); line-height: 1.45; }
+.admin-slot-control .button, .admin-slot-control .text-button { margin-top: auto; }
+.admin-slot-control.blocked { border-color: #d7b49d; background: #fff8f3; }
+.admin-slot-control.reserved { background: #f1f4f3; opacity: .75; }
+.manual-payment-summary { display: flex; flex-direction: column; gap: 5px; padding: 18px; border-radius: 12px; background: #f3f7f6; border: 1px solid #d7e2df; }
+.manual-payment-summary>span { font-size: 13px; color: var(--muted); }
+.manual-payment-summary>strong { font-family: 'Manrope', sans-serif; font-size: 30px; color: var(--forest); }
+.manual-payment-summary>small { color: var(--muted); }
+.order-money { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 700px) {
+  .admin-slot-manager { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-slot-control { min-height: 155px; }
+  .admin-section .table-wrap table { min-width: 980px; }
+  .order-money { grid-template-columns: 1fr 1fr; }
+}
+
 html, body { max-width: 100%; overflow-x: hidden; background: #ffffff; }
 body, main, .hero, .material-showcase, .audience-section, .factory-network,
 .process-section, .faq-section { background: #ffffff; color: var(--ink); }

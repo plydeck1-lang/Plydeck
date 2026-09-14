@@ -1,6 +1,6 @@
 # PLYDECK · Phase 2 — deployment bundle
 
-Start with `START_HERE.md`. All SQL is in `supabase/`; choose new setup or upgrade in `supabase/README_SQL.md`. This bundle includes migration 007 for the fixed four-item, 100-sheet OEM slot.
+Start with `START_HERE.md`. All SQL is in `supabase/`; choose new setup or upgrade in `supabase/README_SQL.md`. This bundle includes migration 009 for admin slot controls and manual offline payment confirmation.
 
 When upgrading an older Razorpay-enabled checkout, run `powershell -ExecutionPolicy Bypass -File .\scripts\remove-legacy-razorpay.ps1` before `npm.cmd run build`. This removes obsolete checkout routes that ZIP extraction cannot delete.
 
@@ -32,6 +32,7 @@ To reset the demo, clear the browser's `plydeck-demo-v1` local-storage entry. Ci
 - Exactly 100 fixed 8 × 4 ft sheets per slot: 50 MR 16mm, 20 BWP 16mm, 15 MR 6mm and 15 BWP 6mm. Buyers choose slot numbers only; they cannot change quantities.
 - Admin rate card stores a separate rate per sft for each of the four fixed items. The storefront shows each rate with `+ GST`; the customer summary shows the four plywood lines, taxable order value, 18% GST and final total. Internal operations allocations remain in the locked quote for accounting and audit without being itemized to the buyer.
 - Direct slot reservation: authenticated buyers confirm and immediately lock available fixed slots; no online payment gateway is used.
+- Admins can block or unblock available slots with a reason, and record verified offline payments in 10%, 40% and 50% stages. Blocked slots count toward pool allocation; only reserved orders require payment.
 - Business login, registration, email verification, password reset, GST and billing profile.
 - Customer order history within the same storefront, QC report and reservation actions.
 - In-app admin for category visibility, simplified pool price/specification setup and publication, internal shipment capacity, orders, QC and FIFO waiting-list offers. Public pool listings are image-free responsive cards; drafts stay private until **Publish pool** is used.
@@ -53,7 +54,7 @@ All money in quotes is integer paise. GST is calculated on the complete taxable 
 
 ## Next: connect Supabase and WhatsApp
 
-Follow `docs/DEPLOYMENT.md` in order, then complete `docs/WHATSAPP_SETUP.md` for Meta templates and webhook verification. No payment credentials are required: the connected flow creates a direct reservation and locks slots atomically.
+Follow `docs/DEPLOYMENT.md` in order, then complete `docs/WHATSAPP_SETUP.md` for Meta templates and webhook verification. No gateway credentials are required: reservations lock atomically and administrators confirm offline receipts from Manage > Orders.
 
 Production seed pools start as drafts so the provisional factory specifications and freight assumptions cannot accidentally become paid offers. Edit the draft pool, replace pending specifications, verify commercial terms, and use Publish pool to make it visible. In demo mode, both sample pools are open immediately.
 

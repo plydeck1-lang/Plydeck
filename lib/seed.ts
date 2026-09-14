@@ -96,6 +96,7 @@ export function demoSeed(): StoreData {
       waitlist_count: 0,
     })),
     orders: [],
+    manualPayments: [],
     profile: null,
     isAdmin: false,
     waitlist: [],

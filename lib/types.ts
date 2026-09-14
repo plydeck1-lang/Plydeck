@@ -84,7 +84,7 @@ export type Pool = {
   delivery_target?: string;
   qc_report?: string;
   payment_due_at?: string;
-  allocations?: { slot_no: number; status: string }[];
+  allocations?: { slot_no: number; status: string; order_id?: string; reason?: string }[];
   waitlist_count?: number;
 };
 export type Profile = {
@@ -124,7 +124,7 @@ export type Order = {
   secondary_qty: number;
   status: string;
   quote: Quote;
-  /** Retained for compatibility with existing Supabase rows; direct bookings always store zero. */
+  /** Amount of offline receipts confirmed by an administrator, stored in paise. */
   paid_amount: number;
   created_at: string;
   expires_at?: string;
@@ -132,6 +132,18 @@ export type Order = {
   refund_reason?: string;
   replacement?: boolean;
   payment_due_at?: string;
+};
+export type ManualPayment = {
+  id: string;
+  order_id: string;
+  stage: "booking" | "confirmation" | "final";
+  amount: number;
+  method: "bank_transfer" | "upi" | "cash" | "cheque" | "other";
+  reference?: string | null;
+  note?: string | null;
+  received_at: string;
+  recorded_by: string;
+  created_at: string;
 };
 export type WhatsAppMessageStatus =
   "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "skipped";
@@ -163,6 +175,7 @@ export type StoreData = {
   shipments: Shipment[];
   profile?: Profile | null;
   orders?: Order[];
+  manualPayments?: ManualPayment[];
   isAdmin?: boolean;
   waitlist?: {
     id: string;

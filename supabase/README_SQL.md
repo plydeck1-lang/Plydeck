@@ -5,7 +5,7 @@
 1. Create a dedicated PLYDECK Supabase project.
 2. Open SQL Editor > New query.
 3. Paste the entire `install/PLYDECK_NEW_PROJECT_SETUP.sql` file and click Run.
-4. It installs migrations 001–008 and seed data. Do not also run the individual migrations or seed.
+4. It installs migrations 001–009 and seed data. Do not also run the individual migrations or seed.
 5. Configure Auth/email redirects and app credentials as described in `docs/DEPLOYMENT.md`.
 6. Register and confirm your PLYDECK account in connected mode.
 7. Copy its UUID from Supabase Authentication > Users. Replace the placeholder in `admin/CREATE_FIRST_ADMIN.sql`, then run that script.
@@ -21,18 +21,19 @@ Run only these files, in order:
 4. `migrations/006_fixed_100_sheet_slot_mix.sql`
 5. `migrations/007_fixed_four_item_slot.sql`
 6. `migrations/008_direct_slot_reservations.sql`
+7. `migrations/009_admin_slot_blocks_manual_payments.sql`
 
 If 001 was applied but 002 was not, run 002 first. Keep WhatsApp disabled while upgrading. Deploy the matching source after SQL succeeds.
 
 ## C. Existing Phase 2 project (001, 002, 003 already applied)
 
-Run `migrations/004_whatsapp_delivery_fixes.sql`, `migrations/005_independent_thickness_quantities.sql`, `migrations/006_fixed_100_sheet_slot_mix.sql`, `migrations/007_fixed_four_item_slot.sql`, then `migrations/008_direct_slot_reservations.sql`, and deploy the matching source. Do not rerun 003.
+Run migrations 004, 005, 006, 007, 008 and 009 in order, then deploy the matching source. Do not rerun 003.
 
-If migration 005 is already installed, run migrations 006, 007 and 008. If migration 006 is already installed, run `migrations/007_fixed_four_item_slot.sql`, then `migrations/008_direct_slot_reservations.sql`. If 007 is already installed, run only 008.
+If migration 008 is already installed, run only `migrations/009_admin_slot_blocks_manual_payments.sql`.
 
 ## D. Individual files for a new project (alternative to A)
 
-If you prefer separate queries, run 001, 002, 003, 004, 005, 006, 007, 008, then `seed.sql` exactly once in that order. Do not use the combined installer as well.
+If you prefer separate queries, run 001 through 009, then `seed.sql` exactly once in that order. Do not use the combined installer as well.
 
 | File | Purpose |
 |---|---|
@@ -44,6 +45,7 @@ If you prefer separate queries, run 001, 002, 003, 004, 005, 006, 007, 008, then
 | 006_fixed_100_sheet_slot_mix.sql | Links both thickness selectors to a mandatory 100-sheet total and limits the mix to 70:30–85:15 |
 | 007_fixed_four_item_slot.sql | Replaces buyer quantity controls with the fixed 50/20/15/15 MR/BWP slot and enforces its four-line rate card |
 | 008_direct_slot_reservations.sql | Removes active payment gates: authenticated buyers confirm and lock fixed slots directly; admin confirmation, QC, dispatch and cancellation no longer require payments |
+| 009_admin_slot_blocks_manual_payments.sql | Adds admin slot blocking, auditable offline 10%/40%/50% payment confirmation and payment-aware confirmation/dispatch rules |
 | seed.sql | Three categories and two five-slot OEM draft pools |
 | CREATE_FIRST_ADMIN.sql | Assign your existing Auth user the admin role |
 
