@@ -2,6 +2,8 @@
 
 Start with `START_HERE.md`. All SQL is in `supabase/`; choose new setup or upgrade in `supabase/README_SQL.md`. This bundle includes migration 007 for the fixed four-item, 100-sheet OEM slot.
 
+When upgrading an older Razorpay-enabled checkout, run `powershell -ExecutionPolicy Bypass -File .\scripts\remove-legacy-razorpay.ps1` before `npm.cmd run build`. This removes obsolete checkout routes that ZIP extraction cannot delete.
+
 A city-first plywood buying webapp for retailers and contractors. Built with Next.js App Router, React, TypeScript and Supabase, for deployment on Vercel.
 
 ## Start in VS Code

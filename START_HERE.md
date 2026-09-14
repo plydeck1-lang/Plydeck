@@ -4,6 +4,12 @@ This source archive contains the whole Next.js webapp, not an update-only patch.
 
 Important: extract the archive directly into the folder whose `package.json` belongs to PLYDECK. Do not leave the extracted source as a child folder inside an older PLYDECK project. A nested copy causes the parent TypeScript configuration to compile new components against old root types.
 
+If this build is copied over an older Razorpay-enabled PLYDECK folder, run the cleanup script once before building. Archive extraction does not delete obsolete routes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\remove-legacy-razorpay.ps1
+```
+
 ## 1. Run the local demo in VS Code on Windows
 
 Extract to a new folder such as `C:\plydeck`, or extract directly over your existing repository root after preserving `.env.local`. Open the one folder containing `package.json`, `app`, `components` and `lib` together in VS Code. In Terminal > New Terminal:
