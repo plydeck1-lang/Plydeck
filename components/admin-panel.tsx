@@ -39,6 +39,11 @@ import {
   poolPublishIssues,
   SPEC_LABELS,
 } from "@/lib/pool-admin";
+
+const POOL_CITIES = [
+  { value: "Bengaluru", label: "Bangalore", code: "BLR" },
+  { value: "Hyderabad", label: "Hyderabad", code: "HYD" },
+] as const;
 type Props = {
   data: StoreData;
   onDemoChange: (d: StoreData) => void;
@@ -1086,6 +1091,13 @@ function PoolEditor({
   function config(k: keyof PoolConfig, value: unknown) {
     setD({ ...d, config: { ...d.config, [k]: value } });
   }
+  function changeCity(city: (typeof POOL_CITIES)[number]["value"]) {
+    const prefix = POOL_CITIES.find((entry) => entry.value === city)!.code;
+    const code = /^(BLR|HYD)-/.test(d.code)
+      ? d.code.replace(/^(BLR|HYD)-/, `${prefix}-`)
+      : d.code;
+    setD({ ...d, city, code });
+  }
   function number(
     k: keyof PoolConfig,
     label: string,
@@ -1191,11 +1203,21 @@ function PoolEditor({
             </label>
             <label>
               City
-              <input
+              <select
                 required
                 value={d.city}
-                onChange={(e) => setD({ ...d, city: e.target.value })}
-              />
+                onChange={(e) =>
+                  changeCity(
+                    e.target.value as (typeof POOL_CITIES)[number]["value"],
+                  )
+                }
+              >
+                {POOL_CITIES.map((entry) => (
+                  <option key={entry.value} value={entry.value}>
+                    {entry.label}
+                  </option>
+                ))}
+              </select>
             </label>
             <label>
               Category

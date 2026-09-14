@@ -25,7 +25,7 @@ export const poolSchema = z.object({
   name: z.string().trim().min(3).max(160),
   category_id: z.uuid(),
   shipment_id: z.uuid(),
-  city: z.string().trim().min(2).max(80),
+  city: z.enum(["Bengaluru", "Hyderabad"]),
   image_url: image,
   total_slots: z.number().int().min(1).max(100),
   closes_at: z.iso
