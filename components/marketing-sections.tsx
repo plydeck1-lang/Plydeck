@@ -34,7 +34,7 @@ const audiences = [
   {
     kicker: "FOR INTERIOR CONTRACTORS & RETAILERS",
     title: "Buy closer to factory economics without carrying a full truck alone.",
-    copy: "Reserve a standard slot, see the material rate and GST upfront, and follow one order from booking to QC and dispatch.",
+    copy: "Reserve a standard slot, see every final material rate upfront, and follow one order from booking to QC and dispatch.",
     icon: Building2,
     points: [
       "Lower sourcing friction through aggregated city demand",
@@ -72,7 +72,7 @@ const faqs = [
   },
   {
     q: "Do I need to make an online payment to reserve?",
-    a: "No. Select the available slots, review the fixed contents, price and GST, accept the booking terms and confirm. The selected slots are locked immediately against your verified business account.",
+    a: "No. Select the available slots, review the fixed contents and final price, accept the booking terms and confirm. The selected slots are locked immediately against your verified business account.",
   },
   {
     q: "Are rates the same in every city?",
@@ -91,8 +91,8 @@ const faqs = [
     a: "Not in the current OEM pool. Fixed composition keeps production, payload, costing and QC consistent across buyers. New compositions can be opened as separate pools when enough demand exists.",
   },
   {
-    q: "Do I need a GST-registered business account?",
-    a: "Yes. Slot booking is designed for retailers, contractors and other business buyers. Business, GST and billing details must be completed before confirming a reservation.",
+    q: "Do I need a verified business account?",
+    a: "Yes. Slot booking is designed for retailers, contractors and other business buyers. Business, tax-registration and billing details must be completed before confirming a reservation.",
   },
 ];
 
@@ -311,8 +311,8 @@ export function MarketingSections({
           </div>
         </div>
         <div className="process-grid">
-          <article><span>01</span><BadgeIndianRupee size={24} /><h3>Review the pool</h3><p>Check the fixed slot, rate per sft, GST, closing time and city.</p></article>
-          <article><span>02</span><Handshake size={24} /><h3>Confirm your slots</h3><p>Log in with GST details, select available slots and confirm the reservation.</p></article>
+          <article><span>01</span><BadgeIndianRupee size={24} /><h3>Review the pool</h3><p>Check the fixed slot, final rates, closing time and city.</p></article>
+          <article><span>02</span><Handshake size={24} /><h3>Confirm your slots</h3><p>Log in with verified business details, select available slots and confirm the reservation.</p></article>
           <article><span>03</span><Factory size={24} /><h3>Pool confirmation</h3><p>When the pool fills, the shared order moves to supplier commitment.</p></article>
           <article><span>04</span><ClipboardCheck size={24} /><h3>QC and dispatch</h3><p>Review the QC update and follow the order through dispatch.</p></article>
         </div>

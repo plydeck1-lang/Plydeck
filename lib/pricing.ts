@@ -1,5 +1,5 @@
-import type { Pool, Quote, Costs, RateCard } from "./types";
-export const TERMS_VERSION = "2026-09-direct-1";
+import type { Pool, Quote, RateCard } from "./types";
+export const TERMS_VERSION = "2026-09-final-rate-1";
 export const FIXED_SLOT_ITEMS = [
   {
     rateKey: "mr_16",
@@ -39,15 +39,6 @@ export const FIXED_SLOT_ITEMS = [
 export const FIXED_PRIMARY_QTY = 70;
 export const FIXED_SECONDARY_QTY = 30;
 export const FIXED_SHEETS_PER_SLOT = 100;
-export const COST_LABELS: Record<keyof Costs, string> = {
-  transport: "Factory → Bengaluru freight",
-  unloading: "Warehouse unloading",
-  pickup_loading: "Loading for collection",
-  factory_packing: "Factory loading & packing",
-  insurance: "Transit insurance",
-  contingency: "Handling contingency",
-  warehouse: "Transit warehouse allocation",
-};
 export const money = (paise: number, decimals = 0) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -68,34 +59,9 @@ export function quoteSlot(pool: Pool, slots = 1): Quote {
     ),
     basis: `${item.quantity * slots} sheets × 32 sqft × ₹${c.rate_card[item.rateKey]}`,
   }));
-  for (const k of Object.keys(COST_LABELS) as (keyof Costs)[])
-    lines.push({
-      label: COST_LABELS[k],
-      amount: Math.round((c.costs[k] * 100) / pool.total_slots) * slots,
-      basis: `₹${c.costs[k].toLocaleString("en-IN")} pool allocation ÷ ${pool.total_slots} slots × ${slots}`,
-    });
-  lines.push({
-    label: "PLYDECK service & trading spread",
-    amount: Math.round(area * c.margin_rate * 100),
-    basis: `${area.toLocaleString("en-IN")} sqft × ₹${c.margin_rate}`,
-  });
-  let subtotal = lines.reduce((s, l) => s + l.amount, 0);
-  if (c.rounding_rate > 0) {
-    const rounded =
-      Math.ceil((subtotal / (area * 100) - 1e-9) / c.rounding_rate) *
-      c.rounding_rate;
-    const uplift = Math.round(rounded * area * 100) - subtotal;
-    if (uplift > 0) {
-      lines.push({
-        label: "Selling-rate rounding",
-        amount: uplift,
-        basis: `Rounded up to ₹${c.rounding_rate}/sqft increment`,
-      });
-      subtotal += uplift;
-    }
-  }
-  const gst = Math.round((subtotal * c.gst_percent) / 100),
-    total = subtotal + gst;
+  const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
+  const gst = 0;
+  const total = subtotal;
   return {
     primary_qty: FIXED_PRIMARY_QTY,
     secondary_qty: FIXED_SECONDARY_QTY,

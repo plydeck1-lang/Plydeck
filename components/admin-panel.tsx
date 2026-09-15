@@ -381,7 +381,7 @@ export function AdminPanel({
                   {(p.allocations ?? []).filter((entry) => entry.status === "blocked").length} blocked ·{" "}
                   {p.total_slots} total ·{" "}
                   {p.status.replaceAll("_", " ")} ·{" "}
-                  {money(quoteSlot(p).total, 2)} / fixed slot incl. GST
+                  {money(quoteSlot(p).total, 2)} / fixed slot
                 </p>
                 {p.status === "draft" &&
                   poolPublishIssues(p, data.categories).length > 0 && (
@@ -599,7 +599,7 @@ export function AdminPanel({
                     </td>
                     <td>
                       {money(o.quote.total, 2)}
-                      <small>Includes GST · offline collection</small>
+                      <small>Final order value · offline collection</small>
                     </td>
                     <td>
                       <strong>{money(o.paid_amount, 2)}</strong>
@@ -1098,26 +1098,6 @@ function PoolEditor({
       : d.code;
     setD({ ...d, city, code });
   }
-  function number(
-    k: keyof PoolConfig,
-    label: string,
-    min = 0,
-    step: any = "any",
-  ) {
-    return (
-      <label key={k}>
-        {label}
-        <input
-          type="number"
-          min={min}
-          step={step}
-          required
-          value={d.config[k] as number}
-          onChange={(e) => config(k, Number(e.target.value))}
-        />
-      </label>
-    );
-  }
   function rate(key: keyof RateCard) {
     const item = FIXED_SLOT_ITEMS.find((entry) => entry.rateKey === key)!;
     return (
@@ -1129,7 +1109,7 @@ function PoolEditor({
           </small>
         </span>
         <span>
-          Rate per sft (₹) + GST
+          Final rate per sft (₹)
           <input
             type="number"
             min={0.01}
@@ -1269,15 +1249,6 @@ function PoolEditor({
           </p>
           <div className="admin-rate-card">
             {FIXED_SLOT_ITEMS.map((item) => rate(item.rateKey))}
-          </div>
-          <h3>Selling spread</h3>
-          <div className="form-grid">
-            {number("margin_rate", "PLYDECK spread ₹/sqft", 0)}
-            {number("rounding_rate", "Round up rate to ₹/sqft", 0)}
-            <label>
-              GST
-              <input value="18%" disabled />
-            </label>
           </div>
           <h3>Product specification</h3>
           {pendingSpecifications(d.config).length > 0 && (

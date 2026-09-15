@@ -18,9 +18,9 @@ export const initialConfig: PoolConfig = {
   rate_card: { mr_16: 56, bwp_16: 56, mr_6: 56, bwp_6: 56 },
   primary_rate: 56,
   secondary_rate: 56,
-  margin_rate: 2,
-  rounding_rate: 0.25,
-  gst_percent: 18,
+  margin_rate: 0,
+  rounding_rate: 0,
+  gst_percent: 0,
   primary_weight: 32,
   secondary_weight: 12,
   costs: {

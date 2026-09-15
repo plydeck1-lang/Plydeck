@@ -14,7 +14,7 @@ Set `NEXT_PUBLIC_DEMO_MODE=true` for the browser-only demo. For connected mode s
 
 ## 2. Supabase
 
-For a new project, run `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` once. For the existing PLYDECK project, run migration 008 after 007, then `supabase/migrations/009_admin_slot_blocks_manual_payments.sql`. If 008 is already installed, run only 009. Migration 009 adds slot blocking and auditable offline receipt confirmations; it does not add a payment gateway.
+For a new project, run `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` once. For the existing PLYDECK project, apply outstanding migrations in order through `supabase/migrations/010_final_rate_card_pricing.sql`. If migration 009 is already installed, run only 010 before deploying the matching source.
 
 Create a user, then run `supabase/admin/CREATE_FIRST_ADMIN.sql` with that user UUID. Configure the Auth site URL and redirect URL to your Vercel origin.
 
@@ -37,4 +37,4 @@ npm.cmd run build
 
 In a preview environment: create a buyer profile, reserve a slot, block and unblock a different slot as admin, and verify neither action can overwrite a reservation. In Manage > Orders, confirm the 10% and 40% offline receipts. Reserve or block every pool slot, confirm the pool, record QC, confirm the final 50% and dispatch. Verify the booking WhatsApp event for an opted-in profile.
 
-Before launch, replace provisional legal identity, supplier specifications, rates, freight and GST details with the operating entity's reviewed commercial terms.
+Before launch, replace provisional legal identity, supplier specifications and rates with the operating entity's reviewed commercial terms.

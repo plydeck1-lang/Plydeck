@@ -54,9 +54,9 @@ export const poolSchema = z.object({
     }),
     primary_rate: positive.max(10000),
     secondary_rate: positive.max(10000),
-    margin_rate: nonnegative.max(1000),
-    rounding_rate: nonnegative.max(100),
-    gst_percent: z.literal(18),
+    margin_rate: z.literal(0),
+    rounding_rate: z.literal(0),
+    gst_percent: z.literal(0),
     primary_weight: positive.max(300),
     secondary_weight: positive.max(300),
     costs: z.object({
@@ -101,7 +101,7 @@ export const reservationSchema = z
     pool_id: z.uuid(),
     slot_numbers: z.array(z.number().int().min(1).max(100)).min(1).max(100),
     expected_total: z.number().int().positive(),
-    terms_version: z.literal("2026-09-direct-1"),
+    terms_version: z.literal("2026-09-final-rate-1"),
   })
   .refine(
     (v) => new Set(v.slot_numbers).size === v.slot_numbers.length,

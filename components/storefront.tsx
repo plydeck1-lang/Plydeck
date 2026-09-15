@@ -83,6 +83,9 @@ function migrateDemoData(value: StoreData): StoreData {
         default_secondary: 30,
         min_secondary: 30,
         max_secondary: 30,
+        margin_rate: 0,
+        rounding_rate: 0,
+        gst_percent: 0,
       };
       return { ...p, config: c };
     }),
@@ -773,8 +776,8 @@ export default function Storefront() {
               <div>
                 <h3>Your material. Your numbers. No guesswork.</h3>
                 <p>
-                  See the rate per sft, taxable value and GST before you confirm
-                  and lock a slot.
+                  See every final rate and the complete slot value before you
+                  confirm and lock a slot.
                 </p>
               </div>
               <button className="text-button" onClick={() => setTerms(true)}>
@@ -854,7 +857,7 @@ export default function Storefront() {
                 <Package size={36} />
                 <h3>Your first pool starts here.</h3>
                 <p>
-                  Reserve a slot to see its fixed contents, price and GST.
+                  Reserve a slot to see its fixed contents and final price.
                 </p>
                 <button
                   className="button dark"
@@ -887,7 +890,7 @@ export default function Storefront() {
                     </div>
                     <div className="order-money">
                       <div>
-                        <span>Total incl. GST</span>
+                        <span>Order total</span>
                         <strong>{money(order.quote.total, 2)}</strong>
                       </div>
                       <div>
@@ -920,9 +923,9 @@ export default function Storefront() {
                       </details>
                     )}
                     <details className="breakdown">
-                      <summary>View fixed contents, price &amp; GST</summary>
+                      <summary>View fixed contents &amp; price</summary>
                       <FixedSlotContents pool={pool} />
-                      <CustomerPriceSummary pool={pool} quote={order.quote} />
+                      <CustomerPriceSummary quote={order.quote} />
                     </details>
                     <div className="order-actions">
                       {![
@@ -1120,7 +1123,7 @@ function PoolCard({
         <div className="pool-price">
           <div>
             <strong>{rupees(quote.rate)}</strong>
-            <span>/ sqft + GST</span>
+            <span>/ sqft</span>
           </div>
           <small>Four-item fixed slot · rate-card pricing</small>
         </div>
@@ -1170,21 +1173,14 @@ function FixedSlotContents({ pool }: { pool: Pool }) {
           </strong>
           <b>{item.quantity} sheets</b>
           <small className="fixed-slot-rate">
-            Rate per sft · {rupees(pool.config.rate_card[item.rateKey])}/sft + GST
+            Final rate per sft · {rupees(pool.config.rate_card[item.rateKey])}/sft
           </small>
         </div>
       ))}
     </div>
   );
 }
-function CustomerPriceSummary({
-  pool,
-  quote,
-}: {
-  pool: Pool;
-  quote: ReturnType<typeof quoteSlot>;
-}) {
-  const c = pool.config;
+function CustomerPriceSummary({ quote }: { quote: ReturnType<typeof quoteSlot> }) {
   return (
     <div className="cost-lines">
       {FIXED_SLOT_ITEMS.map((item, index) => (
@@ -1196,14 +1192,6 @@ function CustomerPriceSummary({
           <strong>{money(quote.lines[index].amount, 2)}</strong>
         </div>
       ))}
-      <div className="cost-subtotal">
-        <span>Taxable order value</span>
-        <strong>{money(quote.subtotal, 2)}</strong>
-      </div>
-      <div>
-        <span>GST ({c.gst_percent}%)</span>
-        <strong>{money(quote.gst, 2)}</strong>
-      </div>
       <div className="cost-total">
         <span>Order total</span>
         <strong>{money(quote.total, 2)}</strong>
@@ -1351,7 +1339,7 @@ function SlotDialog({
             </h3>
             <p>
               {quote.area.toLocaleString("en-IN")} sqft · {rupees(quote.rate)}
-              /sqft + GST
+              /sqft
             </p>
             {!slots.length && (
               <small>
@@ -1359,7 +1347,7 @@ function SlotDialog({
               </small>
             )}
           </div>
-          <CustomerPriceSummary pool={pool} quote={quote} />
+          <CustomerPriceSummary quote={quote} />
           <div className="pay-today reservation-lock-summary">
             <span>Booking method</span>
             <strong>Direct confirmation</strong>
@@ -1398,8 +1386,8 @@ function SlotDialog({
                 : "Log in to reserve"}
           </button>
           <p className="tiny muted centered">
-            No online payment is collected. GST business details are required
-            for the reservation record.
+            No online payment is collected. Verified business and billing
+            details are required for the reservation record.
           </p>
         </aside>
       </div>
@@ -1589,7 +1577,7 @@ function ProfileDialog({
           }}
         >
           <p className="muted">
-            Used for GST invoicing and order fulfilment.{" "}
+            Used for business invoicing and order fulfilment.{" "}
             {DEMO ? "Use sample details in this demo." : ""}
           </p>
           {field("business_name", "Registered business name")}
@@ -1599,7 +1587,7 @@ function ProfileDialog({
             pattern: "[6-9][0-9]{9}",
             maxLength: 10,
           })}
-          {field("gstin", "GSTIN", {
+          {field("gstin", "Business tax ID", {
             pattern: "[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]",
             maxLength: 15,
             minLength: 15,

@@ -25,7 +25,7 @@ export default function AboutPage() {
         </p>
       </section>
       <div className="about-principles">
-        <article><Building2 size={25} /><h3>Buyer clarity</h3><p>Fixed contents, visible rates and GST before a direct slot confirmation.</p></article>
+        <article><Building2 size={25} /><h3>Buyer clarity</h3><p>Fixed contents, visible final rates and complete order value before confirmation.</p></article>
         <article><Factory size={25} /><h3>Factory-ready demand</h3><p>Consolidated quantities with a shared destination and defined specification.</p></article>
         <article><Layers3 size={25} /><h3>Standardised pools</h3><p>A repeatable buying unit that supports costing, payload and batch planning.</p></article>
         <article><ShieldCheck size={25} /><h3>Controlled release</h3><p>QC-led release and documented order progress before dispatch.</p></article>

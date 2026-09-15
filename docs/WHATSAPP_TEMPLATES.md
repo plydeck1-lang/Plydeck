@@ -4,7 +4,7 @@ Use language `en_US` (or the matching table language) and Utility category. The 
 
 ## plydeck_booking_received
 
-PLYDECK reservation {{1}} confirmed for pool {{2}}. Order value including GST: INR {{3}}. Your selected slots are locked.
+PLYDECK reservation {{1}} confirmed for pool {{2}}. Final order value: INR {{3}}. Your selected slots are locked.
 
 ## plydeck_pool_confirmed
 

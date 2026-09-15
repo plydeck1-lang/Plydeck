@@ -1,6 +1,6 @@
 # PLYDECK — complete build and Supabase setup
 
-This source archive contains the whole Next.js webapp, not an update-only patch. It includes all SQL, the public storefront, pool/slot configuration, business login, GST pricing, direct slot reservations, admin slot blocking, manual offline payment confirmation and WhatsApp integration code.
+This source archive contains the whole Next.js webapp, not an update-only patch. It includes all SQL, the public storefront, final rate-card pricing, pool/slot configuration, business login, direct slot reservations, admin slot blocking, manual offline payment confirmation and WhatsApp integration code.
 
 Important: extract the archive directly into the folder whose `package.json` belongs to PLYDECK. Do not leave the extracted source as a child folder inside an older PLYDECK project. A nested copy causes the parent TypeScript configuration to compile new components against old root types.
 
@@ -27,9 +27,9 @@ Open http://localhost:3000. Select Bengaluru. Use sample business details in dem
 Open `supabase/README_SQL.md` and choose the matching path:
 
 - New project: run `supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql` once.
-- Phase 1 already installed: run migrations 003 through 009 in order.
-- Migration 007 already installed: run migrations 008 and 009.
-- Migration 008 already installed: run only migration 009.
+- Phase 1 already installed: run migrations 003 through 010 in order.
+- Migration 008 already installed: run migrations 009 and 010.
+- Migration 009 already installed: run only migration 010.
 
 Keep PLYDECK in its own Supabase project. Set the project's public URL, anon key and server service-role key in `.env.local`. Enable Email Auth and configure redirects. Change `NEXT_PUBLIC_DEMO_MODE=false` for connected mode. Restart the app after environment changes.
 

@@ -15,7 +15,7 @@ async function database(combined = false) {
   if (combined) {
     await db.exec(readFileSync("supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql", "utf8"));
   } else {
-    for (const file of ["001_plydeck.sql","002_replacement_slots.sql","003_whatsapp_notifications.sql","004_whatsapp_delivery_fixes.sql","005_independent_thickness_quantities.sql","006_fixed_100_sheet_slot_mix.sql","007_fixed_four_item_slot.sql","008_direct_slot_reservations.sql","009_admin_slot_blocks_manual_payments.sql"])
+    for (const file of ["001_plydeck.sql","002_replacement_slots.sql","003_whatsapp_notifications.sql","004_whatsapp_delivery_fixes.sql","005_independent_thickness_quantities.sql","006_fixed_100_sheet_slot_mix.sql","007_fixed_four_item_slot.sql","008_direct_slot_reservations.sql","009_admin_slot_blocks_manual_payments.sql","010_final_rate_card_pricing.sql"])
       await db.exec(readFileSync(`supabase/migrations/${file}`, "utf8"));
     await db.exec(readFileSync("supabase/seed.sql", "utf8"));
   }
@@ -106,11 +106,13 @@ test("publish remains admin-only and WhatsApp booking event is queued for opt-in
   } finally { await db.close(); }
 });
 
-test("combined installer includes admin slot and manual payment migration and stays guarded", () => {
+test("combined installer includes final rate-card pricing and stays guarded", () => {
   const sql = readFileSync("supabase/install/PLYDECK_NEW_PROJECT_SETUP.sql","utf8");
   assert.match(sql,/008_direct_slot_reservations\.sql/);
   assert.match(sql,/009_admin_slot_blocks_manual_payments\.sql/);
+  assert.match(sql,/010_final_rate_card_pricing\.sql/);
   assert.match(sql,/record_manual_payment/i);
+  assert.match(sql,/2026-09-final-rate-1/);
   assert.match(sql,/direct slot booking overlay/i);
   assert.match(sql,/Existing tables found/);
 });
